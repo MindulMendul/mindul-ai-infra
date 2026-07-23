@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # 1. 공통 AI 추론 엔진 (Ollama)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mindul-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - mindul-net
+
+  # 2. 공통 메시지 큐 (Kafka)
+  kafka:
+    image: apache/kafka:latest
+    container_name: mindul-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://mindul-kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@mindul-kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://mindul-kafka:29092,CONTROLLER://mindul-kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      KAFKA_CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    networks:
+      - mindul-net
+
+  # 3. 공통 Kafka 모니터링 UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: mindul-kafka-ui
+    restart: unless-stopped
+    ports:
+      - "8085:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: mindul-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: mindul-kafka:29092
+    depends_on:
+      - kafka
+    networks:
+      - mindul-net
+
+volumes:
+  ollama_data:
+
+networks:
+  mindul-net:
+    name: mindul-net
+    driver: bridge
