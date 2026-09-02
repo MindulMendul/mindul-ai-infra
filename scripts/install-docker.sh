@@ -16,6 +16,7 @@ else
   apt-get install -y ca-certificates curl
   install -m 0755 -d /etc/apt/keyrings
 
+  # shellcheck disable=SC1091
   . /etc/os-release
   DISTRO_ID="${ID}"
 
@@ -23,7 +24,7 @@ else
   chmod a+r /etc/apt/keyrings/docker.asc
 
   echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${DISTRO_ID} $(. /etc/os-release && echo "${VERSION_CODENAME}") stable" \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${DISTRO_ID} ${VERSION_CODENAME} stable" \
     | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
   apt-get update
