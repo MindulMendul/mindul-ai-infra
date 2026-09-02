@@ -88,9 +88,28 @@ services:
     networks:
       - mindul-net
 
+  # 6. 리버스 프록시 + 자동 HTTPS (Caddy)
+  caddy:
+    image: caddy:2-alpine
+    container_name: mindul-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - portainer
+    networks:
+      - mindul-net
+
 volumes:
   ollama_data:
   portainer_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   mindul-net:

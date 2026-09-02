@@ -1,0 +1,3 @@
+mindul-server.duckdns.org {
+	reverse_proxy portainer:9000
+}
