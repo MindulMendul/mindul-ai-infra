@@ -32,24 +32,30 @@ jobs:
       # multiline PEM getting mangled. Decode it to a runner-temp file and
       # hand ssh-action a path instead of the raw key.
       - name: Decode deploy key
+        env:
+          SSH_PRIVATE_KEY_B64: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > "${{ runner.temp }}/deploy_key.pem"
+          echo "${SSH_PRIVATE_KEY_B64}" | base64 -d > "${{ runner.temp }}/deploy_key.pem"
           chmod 600 "${{ runner.temp }}/deploy_key.pem"
 
       - name: Deploy to server over SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          CODE_SERVER_PASSWORD: ${{ secrets.CODE_SERVER_PASSWORD }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key_path: /github/runner_temp/deploy_key.pem
           port: ${{ secrets.SSH_PORT || 22 }}
+          envs: DEPLOY_PATH,CODE_SERVER_PASSWORD
           script: |
             set -e
-            cd ${{ secrets.DEPLOY_PATH }}
+            cd "$DEPLOY_PATH"
             git fetch origin main
             git reset --hard origin/main
             cat > .env <<ENVEOF
-            CODE_SERVER_PASSWORD=${{ secrets.CODE_SERVER_PASSWORD }}
+            CODE_SERVER_PASSWORD=$CODE_SERVER_PASSWORD
             ENVEOF
             chmod 600 .env
             docker compose pull
