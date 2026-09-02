@@ -67,16 +67,30 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Asia/Seoul
-      - PASSWORD=4351  # 👈 브라우저 접속할 때 쓸 비밀번호!
+      - PASSWORD=${CODE_SERVER_PASSWORD}
     volumes:
       - /home/ubuntu:/config/workspace  # 👈 오라클 서버의 홈 디렉토리를 VS Code 워크스페이스로 연결
       - /var/run/docker.sock:/var/run/docker.sock  # (선택) VS Code 터미널에서 docker 명령어 사용
     networks:
       - mindul-net
 
-  
+  # 5. 인프라 관리 UI (Portainer)
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: mindul-portainer
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - mindul-net
+
 volumes:
   ollama_data:
+  portainer_data:
 
 networks:
   mindul-net:
