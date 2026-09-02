@@ -74,9 +74,23 @@ services:
     networks:
       - mindul-net
 
-  
+  # 5. 인프라 관리 UI (Portainer)
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: mindul-portainer
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - mindul-net
+
 volumes:
   ollama_data:
+  portainer_data:
 
 networks:
   mindul-net:
