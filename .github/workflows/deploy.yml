@@ -36,7 +36,7 @@ jobs:
           SSH_PRIVATE_KEY_B64: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           echo "${SSH_PRIVATE_KEY_B64}" | base64 -d > "${{ runner.temp }}/deploy_key.pem"
-          chmod 600 "${{ runner.temp }}/deploy_key.pem"
+          chmod 644 "${{ runner.temp }}/deploy_key.pem"
 
       - name: Deploy to server over SSH
         uses: appleboy/ssh-action@v1.0.3
