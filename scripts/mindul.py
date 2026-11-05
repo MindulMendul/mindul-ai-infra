@@ -453,11 +453,20 @@ def deploy(args, saved=None):
     state['history']=[release,*[r for r in state['history'] if r!=release]][:2]
     write_json(app_dir/'state.json',state)
     prune_releases(app_dir,state)
+    sync_service_dashboards()
     print(f'[{name}/{environment}] HTTPS 확인',flush=True)
     verified=check_https(domain,definition['health_path'],args.https_timeout)
     state['https_verified']=verified
     write_json(app_dir/'state.json',state)
     print(f'배포 완료: https://{domain}\n커밋: {sha[:12]}\n상태: '+('HTTPS 정상' if verified else '앱 정상 / HTTPS 준비 중 (DNS·인증서 확인 필요)'))
+
+
+def sync_service_dashboards():
+    # Observability must not turn a successful application deployment into a failure.
+    try:
+        run([sys.executable, INFRA/'scripts/service_dashboards.py'], capture=True)
+    except DeployError as error:
+        print(f'Grafana dashboard sync failed; rerun scripts/service_dashboards.py: {error}', file=sys.stderr)
 
 
 def load_app(args):
@@ -501,6 +510,7 @@ def manage(args):
         update_route(ROUTES/(config['project']+'.caddy'),None)
         state['history']=[]
         write_json(directory/'state.json',state)
+        sync_service_dashboards()
         print('컨테이너와 도메인 연결을 제거했습니다. 데이터 볼륨과 환경변수는 보존했습니다.')
     elif args.command=='rollback':
         if len(state['history'])<2: raise DeployError('되돌릴 이전 배포가 없습니다.')

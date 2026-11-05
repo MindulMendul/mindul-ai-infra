@@ -122,7 +122,8 @@ class EncryptedBackupTests(unittest.TestCase):
 
 class ManagedConfigTests(unittest.TestCase):
     def test_dashboard_uids_and_alert_rule_uids_are_unique(self):
-        dashboards=[json.loads(p.read_text()) for p in (ROOT/'monitoring/grafana/dashboards').glob('*.json')]
+        dashboards=[json.loads(p.read_text()) for p in (ROOT/'monitoring/grafana/dashboards').rglob('*.json')]
+        self.assertGreaterEqual(len(dashboards),5)
         self.assertEqual(len(dashboards),len({d['uid'] for d in dashboards}))
         rules=json.loads((ROOT/'monitoring/grafana/provisioning/alerting/mindul.json').read_text())['groups'][0]['rules']
         self.assertEqual(len(rules),len({r['uid'] for r in rules}))

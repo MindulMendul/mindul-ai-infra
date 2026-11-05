@@ -1,6 +1,6 @@
 {
   "uid": "mindul-infra",
-  "title": "Mindul · Infrastructure",
+  "title": "Mindul \u00b7 Infrastructure",
   "tags": [
     "mindul"
   ],
@@ -293,7 +293,7 @@
       "url": "/grafana/d/mindul-infra"
     },
     {
-      "title": "Web RUM",
+      "title": "Murder Mystery",
       "url": "/grafana/d/mindul-rum"
     },
     {

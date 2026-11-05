@@ -1,6 +1,6 @@
 {
   "uid": "mindul-ai",
-  "title": "Mindul · Ollama AI",
+  "title": "Mindul \u00b7 Ollama AI",
   "tags": [
     "mindul"
   ],
@@ -186,7 +186,7 @@
     },
     {
       "id": 6,
-      "title": "생성 속도 추이 · tokens/s",
+      "title": "\uc0dd\uc131 \uc18d\ub3c4 \ucd94\uc774 \u00b7 tokens/s",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -219,7 +219,7 @@
           "placement": "bottom"
         }
       },
-      "description": "응답을 생성한 시간 기준입니다. 모델 로딩과 입력 처리 시간은 제외합니다. 응답 완료 후 최종 토큰 수로 계산합니다."
+      "description": "\uc751\ub2f5\uc744 \uc0dd\uc131\ud55c \uc2dc\uac04 \uae30\uc900\uc785\ub2c8\ub2e4. \ubaa8\ub378 \ub85c\ub529\uacfc \uc785\ub825 \ucc98\ub9ac \uc2dc\uac04\uc740 \uc81c\uc678\ud569\ub2c8\ub2e4. \uc751\ub2f5 \uc644\ub8cc \ud6c4 \ucd5c\uc885 \ud1a0\ud070 \uc218\ub85c \uacc4\uc0b0\ud569\ub2c8\ub2e4."
     },
     {
       "id": 7,
@@ -291,8 +291,8 @@
     },
     {
       "id": 9,
-      "title": "마지막 응답 생성 속도",
-      "description": "출력 토큰 수 ÷ 순수 생성 시간. 응답 완료 후 갱신되며 다음 응답이 끝날 때까지 마지막 측정값을 표시합니다.",
+      "title": "\ub9c8\uc9c0\ub9c9 \uc751\ub2f5 \uc0dd\uc131 \uc18d\ub3c4",
+      "description": "\ucd9c\ub825 \ud1a0\ud070 \uc218 \u00f7 \uc21c\uc218 \uc0dd\uc131 \uc2dc\uac04. \uc751\ub2f5 \uc644\ub8cc \ud6c4 \uac31\uc2e0\ub418\uba70 \ub2e4\uc74c \uc751\ub2f5\uc774 \ub05d\ub0a0 \ub54c\uae4c\uc9c0 \ub9c8\uc9c0\ub9c9 \uce21\uc815\uac12\uc744 \ud45c\uc2dc\ud569\ub2c8\ub2e4.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -336,8 +336,8 @@
     },
     {
       "id": 10,
-      "title": "최근 5분 평균 생성 속도",
-      "description": "최근 5분의 출력 토큰 합계 ÷ 생성 시간 합계. 요청이 없으면 값이 표시되지 않을 수 있습니다.",
+      "title": "\ucd5c\uadfc 5\ubd84 \ud3c9\uade0 \uc0dd\uc131 \uc18d\ub3c4",
+      "description": "\ucd5c\uadfc 5\ubd84\uc758 \ucd9c\ub825 \ud1a0\ud070 \ud569\uacc4 \u00f7 \uc0dd\uc131 \uc2dc\uac04 \ud569\uacc4. \uc694\uccad\uc774 \uc5c6\uc73c\uba74 \uac12\uc774 \ud45c\uc2dc\ub418\uc9c0 \uc54a\uc744 \uc218 \uc788\uc2b5\ub2c8\ub2e4.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -381,8 +381,8 @@
     },
     {
       "id": 11,
-      "title": "마지막 응답 전체 처리 속도",
-      "description": "출력 토큰 수 ÷ 전체 Ollama 처리 시간. 모델 로딩과 입력 처리 시간을 포함합니다.",
+      "title": "\ub9c8\uc9c0\ub9c9 \uc751\ub2f5 \uc804\uccb4 \ucc98\ub9ac \uc18d\ub3c4",
+      "description": "\ucd9c\ub825 \ud1a0\ud070 \uc218 \u00f7 \uc804\uccb4 Ollama \ucc98\ub9ac \uc2dc\uac04. \ubaa8\ub378 \ub85c\ub529\uacfc \uc785\ub825 \ucc98\ub9ac \uc2dc\uac04\uc744 \ud3ec\ud568\ud569\ub2c8\ub2e4.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -426,8 +426,8 @@
     },
     {
       "id": 12,
-      "title": "마지막 응답 완료 시각",
-      "description": "마지막 속도 측정이 언제 완료됐는지 확인할 수 있습니다.",
+      "title": "\ub9c8\uc9c0\ub9c9 \uc751\ub2f5 \uc644\ub8cc \uc2dc\uac01",
+      "description": "\ub9c8\uc9c0\ub9c9 \uc18d\ub3c4 \uce21\uc815\uc774 \uc5b8\uc81c \uc644\ub8cc\ub410\ub294\uc9c0 \ud655\uc778\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -476,7 +476,7 @@
       "url": "/grafana/d/mindul-infra"
     },
     {
-      "title": "Web RUM",
+      "title": "Murder Mystery",
       "url": "/grafana/d/mindul-rum"
     },
     {

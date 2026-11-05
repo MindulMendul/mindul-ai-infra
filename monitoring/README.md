@@ -117,3 +117,14 @@ The Node Exporter textfile collector reads protected host-generated job metrics.
 `ops/README.md` documents the systemd jobs, data scope, encryption key, retention,
 image pinning and recovery procedure. Logs/traces/metrics history is excluded from
 the default data backup; their definitions and dashboards are versioned in Git.
+
+Grafana folders: Infrastructure (host and backups), AI, and Murder Mystery
+(Web RUM; API, Errors & Traces). Existing `mindul-rum` links remain valid.
+Murder Mystery dashboards retain their production/QA environment selector.
+
+After successful deployment or removal, the CLI reconciles a `Web · <app>` folder.
+Its Service dashboard covers container CPU, memory and network for that application's
+environments. `python3 scripts/service_dashboards.py` reconciles manually; installation
+also rebuilds these runtime files from the deployment registry. Application RUM, API
+metrics, logs and traces require explicit instrumentation for each new application.
+Folders organize navigation and do not provide tenant access isolation.

@@ -40,5 +40,6 @@ assert any(m['Destination'] == '/etc/caddy/apps' and Path(m['Source']) == root /
            for m in container['Mounts']), 'Caddy route mount is missing'
 (root / 'deployments/caddy/.ready').write_text('mindul-deploy-v1\n')
 PY
+python3 "${SCRIPT_DIR}/service_dashboards.py"
 echo "설치 완료: ${CLI_PATH}"
 echo "사용법: mindul deploy https://github.com/owner/repository.git"
