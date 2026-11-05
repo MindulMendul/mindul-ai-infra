@@ -1,0 +1,468 @@
+{
+  "uid": "mindul-ops",
+  "title": "Mindul \u00b7 Operations & Backups",
+  "schemaVersion": 39,
+  "version": 1,
+  "tags": [
+    "mindul"
+  ],
+  "editable": false,
+  "refresh": "30s",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Last successful backup age",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(time() - mindul_backup_last_success_timestamp_seconds) / 3600",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Last backup result \u00b7 1=OK",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "mindul_backup_last_attempt_success",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Last restore-check age",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 7,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(time() - mindul_backup_last_restore_check_timestamp_seconds) / 86400",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "d",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Encrypted backup size",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 7,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "mindul_backup_size_bytes",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Public HTTPS health",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "mindul_https_probe_success",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 6,
+      "title": "TLS days remaining",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 14,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(mindul_tls_certificate_expiry_timestamp_seconds - time()) / 86400",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "d",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Required containers \u00b7 1=running",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "mindul_container_running",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Last cache maintenance age",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 21,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(time() - mindul_maintenance_last_success_timestamp_seconds) / 86400",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "d",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Internal alert notifications",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status) (increase(mindul_alert_notifications_total[$__range]))",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 10,
+      "title": "Last infrastructure deployment",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "mindul_infra_deploy_last_success_timestamp_seconds * 1000",
+          "legendFormat": "{{service}} {{container}} {{status}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dateTimeAsIso",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 11,
+      "title": "Operations and alert rules",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 35,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "[Open alert rules](/grafana/alerting/list) \u00b7 [Runbook](https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md)\n\nBackups are encrypted local copies. Off-server storage and external notifications have not been configured. Backup: daily 03:20 KST; restore check: Sunday 04:00 KST; maintenance: Sunday 04:30 KST; probes: every five minutes."
+      }
+    }
+  ],
+  "links": [
+    {
+      "title": "Alert rules",
+      "url": "/grafana/alerting/list"
+    }
+  ]
+}

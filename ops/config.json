@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "backup_keep_count": 3,
+  "backup_max_plaintext_bytes": 2147483648,
+  "build_cache_max_used": "1GB",
+  "image_prune_age": "336h",
+  "helper_image": "mindul-monitoring-telemetry-gateway:latest",
+  "required_containers": ["mindul-caddy", "mindul-kafka", "mindul-ollama", "mindul-portainer", "mindul-vscode", "mindul-kafka-ui", "deploy-festival-1", "murder-parker-qa-festival-qa-1", "mindul-monitoring-grafana-1", "mindul-monitoring-prometheus-1", "mindul-monitoring-loki-1", "mindul-monitoring-tempo-1", "mindul-monitoring-alloy-1", "mindul-monitoring-telemetry-gateway-1"],
+  "probes": {
+    "production": "https://mindul-murder-mystery.duckdns.org/api/health",
+    "qa": "https://qa-mindul-murder-mystery.duckdns.org/api/health",
+    "grafana": "https://mindul-server.duckdns.org/grafana/api/health"
+  },
+  "volumes": [
+    {"name":"deploy_festival-data", "mode":"live-sqlite"},
+    {"name":"murder-parker-qa_festival-qa-data", "mode":"live-sqlite"},
+    {"name":"mindul-monitoring_grafana-data", "mode":"live-sqlite"},
+    {"name":"mindul-ai-infra_portainer_data", "mode":"cold", "container":"mindul-portainer"},
+    {"name":"mindul-ai-infra_kafka_data", "mode":"cold", "container":"mindul-kafka"},
+    {"name":"mindul-ai-infra_vscode_config", "mode":"live-files"},
+    {"name":"mindul-ai-infra_caddy_data", "mode":"live-files"},
+    {"name":"mindul-ai-infra_caddy_config", "mode":"live-files"},
+    {"name":"mindul-ai-infra_ollama_data", "mode":"live-files", "exclude":["models/blobs"]}
+  ]
+}

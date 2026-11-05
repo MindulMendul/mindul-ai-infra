@@ -1,0 +1,18 @@
+{
+  "caddy:2-alpine": "caddy@sha256:70b3180738b46cd88e49b300d790ae448a0aca3f58edef0f000bb57d619a9ab3",
+  "mindul-monitoring-telemetry-gateway": "mindul-monitoring-telemetry-gateway@sha256:d7472544b7ba4f6c4258aa48b0c25a8febdcd6e5c38920d5a4086a14a3818feb",
+  "grafana/grafana:12.3.0": "grafana/grafana@sha256:70d9599b186ce287be0d2c5ba9a78acb2e86c1a68c9c41449454d0fc3eeb84e8",
+  "deploy-festival": "deploy-festival@sha256:97a37725a916befc94d1deefeebd54a2c0b914e9a401da2e6ee6ad50e8edc2d7",
+  "mindul-murder-mystery-qa:local": "mindul-murder-mystery-qa@sha256:360a11641a85affbc94e661ed62daec503388d5caef362fb95090a4bc0a0e1a2",
+  "ghcr.io/google/cadvisor:0.55.1": "ghcr.io/google/cadvisor@sha256:e02855207ec07bb45ee41f720645945251f093f24c28f8c29cf718490f784922",
+  "grafana/tempo:2.9.0": "grafana/tempo@sha256:65a5789759435f1ef696f1953258b9bbdb18eb571d5ce711ff812d2e128288a4",
+  "grafana/loki:3.5.7": "grafana/loki@sha256:0eaee7bf39cc83aaef46914fb58f287d4f4c4be6ec96b86c2ed55719a75e49c8",
+  "prom/prometheus:v3.7.3": "prom/prometheus@sha256:49214755b6153f90a597adcbff0252cc61069f8ab69ce8411285cd4a560e8038",
+  "grafana/alloy:v1.11.3": "grafana/alloy@sha256:8c7256f412feb9f5f48f9f6f9394dc97ca887f63dea9304f347970ecc1787669",
+  "prom/node-exporter:v1.9.1": "prom/node-exporter@sha256:d00a542e409ee618a4edc67da14dd48c5da66726bbd5537ab2af9c1dfc442c8a",
+  "portainer/portainer-ce:latest": "portainer/portainer-ce@sha256:3609c307943bca8e5c492f69ddd6965df177208b50678a4cff28391c8dd4e96e",
+  "lscr.io/linuxserver/code-server:latest": "lscr.io/linuxserver/code-server@sha256:ec8f01d91c93a5d615224a306914c3ea9190c6237f876383591bca676a24fa67",
+  "ollama/ollama:latest": "ollama/ollama@sha256:ebaef4f4c5d93660e1f25f8ad085a112f51ccfb0e8458073e71793959dba91c9",
+  "provectuslabs/kafka-ui:latest": "provectuslabs/kafka-ui@sha256:8f2ff02d64b0a7a2b71b6b3b3148b85f66d00ec20ad40c30bdcd415d46d31818",
+  "apache/kafka:latest": "apache/kafka@sha256:77e3df9054047a88b520d0cc46e16696d3b22022e1d580aeccd2632df6532837"
+}

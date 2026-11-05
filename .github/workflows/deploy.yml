@@ -1,63 +1,71 @@
-name: CI/CD
+name: Infrastructure CI/CD
 
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infrastructure-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-
-      - name: Validate docker-compose.yml
+      - name: Validate Compose and managed configuration
         env:
-          CODE_SERVER_PASSWORD: dummy
-        run: docker compose config
-
-      - name: Shellcheck scripts
-        uses: ludeeus/action-shellcheck@master
-        with:
-          scandir: './scripts'
+          CODE_SERVER_PASSWORD: ci-placeholder
+          GRAFANA_ADMIN_PASSWORD: ci-placeholder
+        run: |
+          docker compose config --quiet
+          docker compose --env-file monitoring/.env.example -f monitoring/compose.yaml config --quiet
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Check shell scripts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y shellcheck
+          shellcheck -x scripts/*.sh
+      - name: Test telemetry gateway
+        run: |
+          docker build -t mindul-telemetry-ci monitoring/gateway
+          docker run --rm -v "$PWD/monitoring/gateway/test_app.py:/app/test_app.py:ro" mindul-telemetry-ci python -m unittest -v test_app
 
   deploy:
     needs: validate
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      # SSH_PRIVATE_KEY holds the key base64-encoded (single line) so it
-      # survives being pasted into the GitHub secret UI without the
-      # multiline PEM getting mangled. Decode it to a runner-temp file and
-      # hand ssh-action a path instead of the raw key.
-      - name: Decode deploy key
+      - uses: actions/checkout@v4
+      - name: Deploy the validated commit over SSH
         env:
           SSH_PRIVATE_KEY_B64: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          echo "${SSH_PRIVATE_KEY_B64}" | base64 -d > "${{ runner.temp }}/deploy_key.pem"
-          chmod 644 "${{ runner.temp }}/deploy_key.pem"
-
-      - name: Deploy to server over SSH
-        uses: appleboy/ssh-action@v1.0.3
-        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-          CODE_SERVER_PASSWORD: ${{ secrets.CODE_SERVER_PASSWORD }}
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key_path: /github/runner_temp/deploy_key.pem
-          port: ${{ secrets.SSH_PORT || 22 }}
-          envs: DEPLOY_PATH,CODE_SERVER_PASSWORD
-          script: |
-            set -e
-            cd "$DEPLOY_PATH"
-            git fetch origin main
-            git reset --hard origin/main
-            cat > .env <<ENVEOF
-            CODE_SERVER_PASSWORD=$CODE_SERVER_PASSWORD
-            ENVEOF
-            chmod 600 .env
-            docker compose pull
-            docker compose up -d
-            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$SSH_HOST" && test -n "$SSH_USER" && test -n "$DEPLOY_PATH"
+          test -n "$SSH_PRIVATE_KEY_B64"
+          [[ "$DEPLOY_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$SSH_PORT" =~ ^[0-9]+$ ]]
+          printf '%s' "$SSH_PRIVATE_KEY_B64" | base64 --decode > "$RUNNER_TEMP/mindul_deploy_key"
+          chmod 600 "$RUNNER_TEMP/mindul_deploy_key"
+          trap 'rm -f "$RUNNER_TEMP/mindul_deploy_key"' EXIT
+          printf -v remote_command 'python3 %q deploy --commit %q' "$DEPLOY_PATH/ops/mindul_ops.py" "$DEPLOY_SHA"
+          ssh -i "$RUNNER_TEMP/mindul_deploy_key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            -o HostKeyAlgorithms=ssh-ed25519 \
+            -o UserKnownHostsFile="$PWD/ops/ssh_known_hosts" \
+            -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+            "$SSH_USER@$SSH_HOST" "$remote_command"

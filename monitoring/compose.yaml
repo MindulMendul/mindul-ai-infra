@@ -1,0 +1,99 @@
+name: mindul-monitoring
+x-defaults: &defaults
+  restart: unless-stopped
+  networks: [monitoring, mindul-net]
+  logging:
+    driver: json-file
+    options: {max-size: "10m", max-file: "2"}
+services:
+  grafana:
+    <<: *defaults
+    image: grafana/grafana@sha256:70d9599b186ce287be0d2c5ba9a78acb2e86c1a68c9c41449454d0fc3eeb84e8
+    mem_limit: 512m
+    environment:
+      GF_SERVER_ROOT_URL: https://mindul-server.duckdns.org/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set monitoring/.env}
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/mindul-infra.json
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+  prometheus:
+    <<: *defaults
+    image: prom/prometheus@sha256:49214755b6153f90a597adcbff0252cc61069f8ab69ce8411285cd4a560e8038
+    mem_limit: 512m
+    command: ["--config.file=/etc/prometheus/prometheus.yaml", "--storage.tsdb.retention.time=7d", "--storage.tsdb.retention.size=1GB"]
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - prometheus-data:/prometheus
+  loki:
+    <<: *defaults
+    image: grafana/loki@sha256:0eaee7bf39cc83aaef46914fb58f287d4f4c4be6ec96b86c2ed55719a75e49c8
+    mem_limit: 512m
+    command: ["-config.file=/etc/loki/config.yaml"]
+    volumes:
+      - ./loki.yaml:/etc/loki/config.yaml:ro
+      - loki-data:/loki
+  tempo:
+    <<: *defaults
+    image: grafana/tempo@sha256:65a5789759435f1ef696f1953258b9bbdb18eb571d5ce711ff812d2e128288a4
+    mem_limit: 512m
+    command: ["-config.file=/etc/tempo/config.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo/config.yaml:ro
+      - tempo-data:/var/tempo
+  alloy:
+    <<: *defaults
+    image: grafana/alloy@sha256:8c7256f412feb9f5f48f9f6f9394dc97ca887f63dea9304f347970ecc1787669
+    mem_limit: 256m
+    command: ["run", "--server.http.listen-addr=0.0.0.0:12345", "--storage.path=/var/lib/alloy", "/etc/alloy/config.alloy"]
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy
+  node-exporter:
+    <<: *defaults
+    image: prom/node-exporter@sha256:d00a542e409ee618a4edc67da14dd48c5da66726bbd5537ab2af9c1dfc442c8a
+    mem_limit: 64m
+    pid: host
+    command: ["--path.rootfs=/host", "--collector.filesystem.mount-points-exclude=^/(dev|proc|sys|run|var/lib/docker/.+)($|/)", "--collector.textfile.directory=/var/lib/node_exporter/textfile_collector"]
+    volumes:
+      - /:/host:ro,rslave
+      - /home/ubuntu/.local/share/mindul-ops/metrics:/var/lib/node_exporter/textfile_collector:ro
+  cadvisor:
+    <<: *defaults
+    image: ghcr.io/google/cadvisor@sha256:e02855207ec07bb45ee41f720645945251f093f24c28f8c29cf718490f784922
+    mem_limit: 256m
+    cgroup: host
+    command: ["--docker_only=true", "--housekeeping_interval=30s", "--store_container_labels=false"]
+    volumes:
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /run/containerd/containerd.sock:/run/containerd/containerd.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+  telemetry-gateway:
+    <<: *defaults
+    build: ./gateway
+    mem_limit: 192m
+    environment:
+      OLLAMA_URL: http://ollama:11434
+    volumes: ["gateway-data:/data"]
+networks:
+  monitoring:
+  mindul-net:
+    external: true
+    name: mindul-net
+volumes:
+  grafana-data:
+  prometheus-data:
+  loki-data:
+  tempo-data:
+  alloy-data:
+  gateway-data:

@@ -1,10 +1,43 @@
+import /etc/caddy/apps/*.caddy
+
 mindul-server.duckdns.org {
 	# Ollama의 모델 관리 API는 공개하지 않고 채팅 경로만 연결
 	handle /api/chat {
-		reverse_proxy ollama:11434
+		reverse_proxy telemetry-gateway:8080
+	}
+
+	redir /grafana /grafana/ 308
+	handle /grafana/* {
+		reverse_proxy grafana:3000
 	}
 
 	handle {
 		reverse_proxy portainer:9000
+	}
+}
+
+mindul-murder-mystery.duckdns.org {
+	handle /telemetry/collect {
+		rewrite * /rum/production
+		reverse_proxy telemetry-gateway:8080
+	}
+	handle /metrics {
+		respond 404
+	}
+	handle {
+		reverse_proxy mindul-murder-mystery:3000
+	}
+}
+
+qa-mindul-murder-mystery.duckdns.org {
+	handle /telemetry/collect {
+		rewrite * /rum/qa
+		reverse_proxy telemetry-gateway:8080
+	}
+	handle /metrics {
+		respond 404
+	}
+	handle {
+		reverse_proxy mindul-murder-mystery-qa:3000
 	}
 }

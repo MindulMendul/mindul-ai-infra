@@ -9,9 +9,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 sudo "${SCRIPT_DIR}/install-docker.sh"
 
 cd "${REPO_ROOT}"
-docker compose pull
-docker compose up -d
-docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+python3 ops/mindul_ops.py deploy
 
 echo
 echo "Portainer:  https://<server-ip>:9443"

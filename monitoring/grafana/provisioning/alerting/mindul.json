@@ -1,0 +1,784 @@
+{
+  "apiVersion": 1,
+  "groups": [
+    {
+      "orgId": 1,
+      "name": "Mindul operations",
+      "folder": "Mindul Operations",
+      "interval": "1m",
+      "rules": [
+        {
+          "uid": "mindul-disk-warning",
+          "title": "Disk usage > 85%",
+          "condition": "B",
+          "for": "10m",
+          "noDataState": "OK",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "warning",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "Disk usage > 85%",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "100 * (1 - node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"rootfs\"} / node_filesystem_size_bytes{mountpoint=\"/\",fstype!=\"rootfs\"})",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A > 85",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-disk-critical",
+          "title": "Disk usage > 95%",
+          "condition": "B",
+          "for": "2m",
+          "noDataState": "OK",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "critical",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "Disk usage > 95%",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "100 * (1 - node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"rootfs\"} / node_filesystem_size_bytes{mountpoint=\"/\",fstype!=\"rootfs\"})",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A > 95",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-memory-high",
+          "title": "Host memory usage > 90%",
+          "condition": "B",
+          "for": "10m",
+          "noDataState": "OK",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "warning",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "Host memory usage > 90%",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A > 90",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-cpu-high",
+          "title": "Host CPU usage > 90%",
+          "condition": "B",
+          "for": "10m",
+          "noDataState": "OK",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "warning",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "Host CPU usage > 90%",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A > 90",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-scrape-down",
+          "title": "Prometheus target unavailable",
+          "condition": "B",
+          "for": "2m",
+          "noDataState": "Alerting",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "critical",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "Prometheus target unavailable",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "up",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A < 1",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-container-down",
+          "title": "Required container stopped",
+          "condition": "B",
+          "for": "2m",
+          "noDataState": "Alerting",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "critical",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "Required container stopped",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "mindul_container_running",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A < 1",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-https-failed",
+          "title": "Public HTTPS health check failed",
+          "condition": "B",
+          "for": "2m",
+          "noDataState": "Alerting",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "critical",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "Public HTTPS health check failed",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "mindul_https_probe_success",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A < 1",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-tls-expiring",
+          "title": "TLS certificate expires within 14 days",
+          "condition": "B",
+          "for": "1h",
+          "noDataState": "OK",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "warning",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "TLS certificate expires within 14 days",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "((mindul_tls_certificate_expiry_timestamp_seconds - time()) / 86400) and (mindul_tls_certificate_expiry_timestamp_seconds > 0)",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A < 14",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-probe-stale",
+          "title": "Health probes are stale",
+          "condition": "B",
+          "for": "5m",
+          "noDataState": "Alerting",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "warning",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "Health probes are stale",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "(time() - mindul_health_last_probe_timestamp_seconds) / 60",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A > 15",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-backup-stale",
+          "title": "No successful backup in 36 hours",
+          "condition": "B",
+          "for": "5m",
+          "noDataState": "Alerting",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "critical",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "No successful backup in 36 hours",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "(time() - mindul_backup_last_success_timestamp_seconds) / 3600",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A > 36",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-backup-failed",
+          "title": "Last backup failed",
+          "condition": "B",
+          "for": "1m",
+          "noDataState": "Alerting",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "critical",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "Last backup failed",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "mindul_backup_last_attempt_success",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A < 1",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-restore-stale",
+          "title": "No restore verification in 8 days",
+          "condition": "B",
+          "for": "1h",
+          "noDataState": "Alerting",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "warning",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "No restore verification in 8 days",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "(time() - mindul_backup_last_restore_check_timestamp_seconds) / 86400",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A > 8",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        },
+        {
+          "uid": "mindul-maintenance-stale",
+          "title": "No maintenance in 8 days",
+          "condition": "B",
+          "for": "1h",
+          "noDataState": "Alerting",
+          "execErrState": "Alerting",
+          "labels": {
+            "severity": "warning",
+            "managed_by": "mindul"
+          },
+          "annotations": {
+            "summary": "No maintenance in 8 days",
+            "runbook_url": "https://github.com/MindulMendul/mindul-ai-infra/blob/main/ops/README.md"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "expr": "(time() - mindul_maintenance_last_success_timestamp_seconds) / 86400",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "type": "math",
+                "expression": "$A > 8",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "contactPoints": [
+    {
+      "orgId": 1,
+      "name": "mindul-local",
+      "receivers": [
+        {
+          "uid": "mindul-local-webhook",
+          "type": "webhook",
+          "disableResolveMessage": false,
+          "settings": {
+            "url": "http://telemetry-gateway:8080/internal/alerts",
+            "httpMethod": "POST"
+          }
+        }
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "orgId": 1,
+      "receiver": "mindul-local",
+      "group_by": [
+        "grafana_folder",
+        "alertname"
+      ],
+      "group_wait": "30s",
+      "group_interval": "5m",
+      "repeat_interval": "4h"
+    }
+  ]
+}

@@ -1,0 +1,743 @@
+{
+  "uid": "mindul-rum",
+  "title": "Mindul · Web RUM & API",
+  "tags": [
+    "mindul"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "refresh": "30s",
+  "timezone": "browser",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Page views (selected interval)",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (environment) (increase(mindul_rum_events_total{environment=~\"$environment\",event=\"page_view\"}[$__range]))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Browser sessions started (selected interval)",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (environment) (increase(mindul_rum_events_total{environment=~\"$environment\",event=\"session_start\"}[$__range]))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "LCP p75",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.75,sum by (le,environment) (rate(mindul_rum_web_vital_bucket{environment=~\"$environment\",metric=\"lcp\"}[$__rate_interval])))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "INP p75 (requires user interaction)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.75,sum by (le,environment) (rate(mindul_rum_web_vital_bucket{environment=~\"$environment\",metric=\"inp\"}[$__rate_interval])))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "CLS p75",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.75,sum by (le,environment) (rate(mindul_rum_web_vital_bucket{environment=~\"$environment\",metric=\"cls\"}[$__rate_interval])))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "FCP and TTFB p75",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.75,sum by (le,environment,metric) (rate(mindul_rum_web_vital_bucket{environment=~\"$environment\",metric=~\"fcp|ttfb\"}[$__rate_interval])))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "JavaScript exceptions per minute",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "60 * sum by (environment,type) (rate(mindul_rum_errors_total{environment=~\"$environment\"}[$__rate_interval]))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Browser API latency p95",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95,sum by (le,environment,route) (rate(mindul_rum_api_seconds_bucket{environment=~\"$environment\"}[$__rate_interval])))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "WebSocket errors / reconnects / command timeouts",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (environment,event) (increase(mindul_rum_events_total{environment=~\"$environment\",event=~\"ws_error|ws_reconnect|ws_command_error|ws_command_timeout|game_start_failed\"}[$__range]))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Server API latency p95",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95,sum by (le,environment,route) (rate(festival_http_request_seconds_bucket{environment=~\"$environment\"}[$__rate_interval])))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Browser / device / version metadata",
+      "type": "logs",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{service_name=\"murder-parker-web\",environment=~\"$environment\"} | json",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      }
+    },
+    {
+      "id": 12,
+      "title": "Browser exception details",
+      "type": "logs",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{service_name=\"murder-parker-web\",environment=~\"$environment\"} |= \"exception\"",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      }
+    },
+    {
+      "id": 13,
+      "title": "Failed browser API calls",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (environment,route,status) (increase(mindul_rum_api_seconds_count{environment=~\"$environment\",status!~\"2..|401\"}[$__range]))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Backend active WebSocket connections",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "festival_websocket_connections{environment=~\"$environment\"}",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Collector delivery failures",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 56,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (environment) (increase(mindul_rum_forward_errors_total{environment=~\"$environment\"}[$__range]))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Backend HTTP request rate",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 56,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (environment,route,status) (rate(festival_http_requests_total{environment=~\"$environment\"}[$__rate_interval]))",
+          "legendFormat": "{{environment}} {{route}} {{metric}} {{event}} {{type}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Browser traces",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 64,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Open **Explore → Tempo → Search**, service **murder-parker-web**. Browser HTTP spans are retained for 48 hours. RUM includes no session replay, DOM text, room codes or user identities. INP appears after interaction; LCP/CLS finalize when the page becomes hidden."
+      }
+    },
+    {
+      "id": 18,
+      "title": "Page views by browser",
+      "type": "barchart",
+      "gridPos": {
+        "x": 0,
+        "y": 68,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (browser_name) (count_over_time({service_name=\"murder-parker-web\",environment=~\"$environment\"} | json | kind=\"event\" | event_name=\"page_view\" [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "{{browser_name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always"
+      }
+    },
+    {
+      "id": 19,
+      "title": "Page views by operating system",
+      "type": "barchart",
+      "gridPos": {
+        "x": 12,
+        "y": 68,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (browser_os) (count_over_time({service_name=\"murder-parker-web\",environment=~\"$environment\"} | json | kind=\"event\" | event_name=\"page_view\" [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "{{browser_os}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always"
+      }
+    },
+    {
+      "id": 20,
+      "title": "Page views by device (mobile=true)",
+      "type": "barchart",
+      "gridPos": {
+        "x": 0,
+        "y": 76,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (browser_mobile) (count_over_time({service_name=\"murder-parker-web\",environment=~\"$environment\"} | json | kind=\"event\" | event_name=\"page_view\" [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "{{browser_mobile}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always"
+      }
+    },
+    {
+      "id": 21,
+      "title": "Page views by release",
+      "type": "barchart",
+      "gridPos": {
+        "x": 12,
+        "y": 76,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (app_version) (count_over_time({service_name=\"murder-parker-web\",environment=~\"$environment\"} | json | kind=\"event\" | event_name=\"page_view\" [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "{{app_version}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always"
+      }
+    }
+  ],
+  "links": [
+    {
+      "title": "Infrastructure",
+      "url": "/grafana/d/mindul-infra"
+    },
+    {
+      "title": "Web RUM",
+      "url": "/grafana/d/mindul-rum"
+    },
+    {
+      "title": "AI",
+      "url": "/grafana/d/mindul-ai"
+    },
+    {
+      "title": "Operations",
+      "url": "/grafana/d/mindul-ops"
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "environment",
+        "type": "custom",
+        "query": "production,qa",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "options": [
+          {
+            "text": "production",
+            "value": "production"
+          },
+          {
+            "text": "qa",
+            "value": "qa"
+          }
+        ]
+      }
+    ]
+  }
+}

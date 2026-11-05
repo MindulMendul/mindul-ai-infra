@@ -1,0 +1,2 @@
+# Project-specific trust: the deployment server must present this exact public key.
+* ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFEljqDY5CH4FfovcsnPUiIPHqK4N6qNhFUxsfsHYqjm

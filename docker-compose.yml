@@ -1,7 +1,7 @@
 services:
   # 1. 공통 AI 추론 엔진 (Ollama)
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama@sha256:ebaef4f4c5d93660e1f25f8ad085a112f51ccfb0e8458073e71793959dba91c9
     container_name: mindul-ollama
     restart: unless-stopped
     ports:
@@ -22,12 +22,12 @@ services:
 
   # 배포 시 기본 채팅 모델 설치 (다운로드는 ollama_data에 영구 보관)
   ollama-init:
-    image: ollama/ollama:latest
+    image: ollama/ollama@sha256:ebaef4f4c5d93660e1f25f8ad085a112f51ccfb0e8458073e71793959dba91c9
     restart: on-failure
     environment:
       - OLLAMA_HOST=http://ollama:11434
     entrypoint: ["/bin/ollama"]
-    command: ["pull", "${OLLAMA_MODEL:-qwen3:4b-instruct}"]
+    command: ["pull", "${OLLAMA_MODEL:-qwen3.5:4b}"]
     depends_on:
       ollama:
         condition: service_healthy
@@ -36,7 +36,7 @@ services:
 
   # 2. 공통 메시지 큐 (Kafka)
   kafka:
-    image: apache/kafka:latest
+    image: apache/kafka@sha256:77e3df9054047a88b520d0cc46e16696d3b22022e1d580aeccd2632df6532837
     container_name: mindul-kafka
     restart: unless-stopped
     ports:
@@ -54,14 +54,16 @@ services:
       KAFKA_LISTENERS: 'PLAINTEXT://mindul-kafka:29092,CONTROLLER://mindul-kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
-      KAFKA_CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+      CLUSTER_ID: '5L6g3nShT-eMCtK--X86sw'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
     networks:
       - mindul-net
 
   # 3. 공통 Kafka 모니터링 UI
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui@sha256:8f2ff02d64b0a7a2b71b6b3b3148b85f66d00ec20ad40c30bdcd415d46d31818
     container_name: mindul-kafka-ui
     restart: unless-stopped
     ports:
@@ -76,7 +78,7 @@ services:
 
      # 4. 브라우저용 Web VS Code (code-server)
   code-server:
-    image: lscr.io/linuxserver/code-server:latest
+    image: lscr.io/linuxserver/code-server@sha256:ec8f01d91c93a5d615224a306914c3ea9190c6237f876383591bca676a24fa67
     container_name: mindul-vscode
     restart: unless-stopped
     ports:
@@ -87,6 +89,7 @@ services:
       - TZ=Asia/Seoul
       - PASSWORD=${CODE_SERVER_PASSWORD}
     volumes:
+      - vscode_config:/config
       - /home/ubuntu:/config/workspace  # 👈 오라클 서버의 홈 디렉토리를 VS Code 워크스페이스로 연결
       - /var/run/docker.sock:/var/run/docker.sock  # (선택) VS Code 터미널에서 docker 명령어 사용
     networks:
@@ -94,7 +97,7 @@ services:
 
   # 5. 인프라 관리 UI (Portainer)
   portainer:
-    image: portainer/portainer-ce:latest
+    image: portainer/portainer-ce@sha256:3609c307943bca8e5c492f69ddd6965df177208b50678a4cff28391c8dd4e96e
     container_name: mindul-portainer
     restart: unless-stopped
     ports:
@@ -108,7 +111,7 @@ services:
 
   # 6. 리버스 프록시 + 자동 HTTPS (Caddy)
   caddy:
-    image: caddy:2-alpine
+    image: caddy@sha256:70b3180738b46cd88e49b300d790ae448a0aca3f58edef0f000bb57d619a9ab3
     container_name: mindul-caddy
     restart: unless-stopped
     ports:
@@ -116,6 +119,7 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./deployments/caddy:/etc/caddy/apps:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -128,6 +132,8 @@ volumes:
   portainer_data:
   caddy_data:
   caddy_config:
+  kafka_data:
+  vscode_config:
 
 networks:
   mindul-net:
