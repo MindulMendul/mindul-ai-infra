@@ -10,6 +10,9 @@ scrape_configs:
     scrape_interval: 15s
     static_configs: [{targets: ["telemetry-gateway:8080"]}]
   - job_name: web
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/web-metrics.token
     static_configs:
       - targets: ["mindul-murder-mystery:3000"]
         labels: {environment: production}

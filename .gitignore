@@ -4,3 +4,4 @@ deployments/caddy/*.caddy
 deployments/caddy/.ready
 monitoring/grafana/service-dashboards/*
 !monitoring/grafana/service-dashboards/.gitkeep
+monitoring/secrets/

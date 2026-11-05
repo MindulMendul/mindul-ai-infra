@@ -10,6 +10,7 @@ Login: `admin`. Initial password is stored only in the ignored `monitoring/.env`
 From `mindul-ai-infra`:
 
 ```sh
+python3 ops/mindul_ops.py init
 docker compose --env-file monitoring/.env -f monitoring/compose.yaml up -d --build
 docker compose --env-file monitoring/.env -f monitoring/compose.yaml ps
 docker compose --env-file monitoring/.env -f monitoring/compose.yaml logs --tail 50
@@ -128,3 +129,10 @@ environments. `python3 scripts/service_dashboards.py` reconciles manually; insta
 also rebuilds these runtime files from the deployment registry. Application RUM, API
 metrics, logs and traces require explicit instrumentation for each new application.
 Folders organize navigation and do not provide tenant access isolation.
+
+Web metrics use a private bearer token in ignored `monitoring/secrets/web-metrics.token`.
+`ops init` creates it once; the secret directory is mode 0700. The file is mounted
+individually read-only for the Prometheus user and included in encrypted backups.
+The QA application reads the matching `METRICS_BEARER_TOKEN` from its server-side
+`~/murder-parker-qa/deploy/.env`; the application deployer preserves this file.
+After a token rotation update both ends and restart Prometheus/the QA application.

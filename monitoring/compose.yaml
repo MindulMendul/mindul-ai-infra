@@ -33,6 +33,7 @@ services:
     command: ["--config.file=/etc/prometheus/prometheus.yaml", "--storage.tsdb.retention.time=7d", "--storage.tsdb.retention.size=1GB"]
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - ./secrets/web-metrics.token:/etc/prometheus/web-metrics.token:ro
       - prometheus-data:/prometheus
   loki:
     <<: *defaults

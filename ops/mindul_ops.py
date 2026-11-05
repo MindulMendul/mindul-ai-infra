@@ -63,6 +63,9 @@ def initialize():
                          (ROOT/'monitoring/.env','GRAFANA_ADMIN_PASSWORD='+uuid.uuid4().hex+'\n')]:
         if not path.exists():atomic(path,content)
         path.chmod(0o600)
+    secrets=ROOT/'monitoring/secrets';secrets.mkdir(exist_ok=True);secrets.chmod(0o700)
+    token=secrets/'web-metrics.token'
+    if not token.exists():atomic(token,uuid.uuid4().hex+uuid.uuid4().hex+'\n',mode=0o644)
     if not (STATE/'status.json').exists():update_metrics()
 
 
@@ -214,7 +217,7 @@ def backup_volumes():
 def copy_configs(stage):
     destination=stage/'config';destination.mkdir()
     paths=run(['git','-C',ROOT,'ls-files','--cached','--others','--exclude-standard'],capture=True).splitlines()
-    for relative in [*paths,'.env','monitoring/.env']:
+    for relative in [*paths,'.env','monitoring/.env','monitoring/secrets/web-metrics.token']:
         source=ROOT/relative
         if source.is_file():
             target=destination/'infra'/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,target)
