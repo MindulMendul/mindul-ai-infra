@@ -1,3 +1,10 @@
 mindul-server.duckdns.org {
-	reverse_proxy portainer:9000
+	# Ollama의 모델 관리 API는 공개하지 않고 채팅 경로만 연결
+	handle /api/chat {
+		reverse_proxy ollama:11434
+	}
+
+	handle {
+		reverse_proxy portainer:9000
+	}
 }

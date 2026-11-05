@@ -11,9 +11,12 @@ sudo "${SCRIPT_DIR}/install-docker.sh"
 cd "${REPO_ROOT}"
 docker compose pull
 docker compose up -d
+docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
 
 echo
 echo "Portainer:  https://<server-ip>:9443"
 echo "Kafka UI:   http://<server-ip>:8085"
 echo "code-server: http://<server-ip>:8443"
 echo "Ollama:     http://<server-ip>:11434"
+echo "Chat API:   https://mindul-server.duckdns.org/api/chat"
+echo "Model download: docker compose logs -f ollama-init"

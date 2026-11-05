@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. 공통 AI 추론 엔진 (Ollama)
   ollama:
@@ -11,8 +9,28 @@ services:
     environment:
       - OLLAMA_HOST=0.0.0.0
       - OLLAMA_ORIGINS=*
+      - OLLAMA_CONTEXT_LENGTH=4096
     volumes:
       - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - mindul-net
+
+  # 배포 시 기본 채팅 모델 설치 (다운로드는 ollama_data에 영구 보관)
+  ollama-init:
+    image: ollama/ollama:latest
+    restart: on-failure
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["/bin/ollama"]
+    command: ["pull", "${OLLAMA_MODEL:-qwen3:4b-instruct}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
     networks:
       - mindul-net
 

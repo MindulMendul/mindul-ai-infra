@@ -60,3 +60,4 @@ jobs:
             chmod 600 .env
             docker compose pull
             docker compose up -d
+            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
