@@ -1,3 +1,9 @@
+{
+	servers {
+		protocols h1 h2 h3
+	}
+}
+
 import /etc/caddy/apps/*.caddy
 
 mindul-server.duckdns.org {
@@ -16,7 +22,7 @@ mindul-server.duckdns.org {
 	}
 }
 
-mindul-murder-mystery.duckdns.org {
+eniveil.com {
 	handle /telemetry/collect {
 		rewrite * /rum/production
 		reverse_proxy telemetry-gateway:8080
@@ -40,4 +46,12 @@ qa-mindul-murder-mystery.duckdns.org {
 	handle {
 		reverse_proxy mindul-murder-mystery-qa:3000
 	}
+}
+
+www.eniveil.com {
+	redir https://eniveil.com{uri} 308
+}
+
+mindul-murder-mystery.duckdns.org {
+	redir https://eniveil.com{uri} 308
 }

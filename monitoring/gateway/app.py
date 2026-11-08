@@ -35,7 +35,7 @@ COLLECTOR_ERRORS = Counter('mindul_rum_forward_errors_total', 'Failed Alloy forw
 ALERT_NOTIFICATIONS = Counter('mindul_alert_notifications_total', 'Internal Grafana alert notification batches', ['status'])
 
 ORIGINS = {
-    'production': 'https://mindul-murder-mystery.duckdns.org',
+    'production': 'https://eniveil.com',
     'qa': 'https://qa-mindul-murder-mystery.duckdns.org',
 }
 EVENTS = {'session_start', 'view_changed', 'page_view', 'ws_open', 'ws_close', 'ws_error', 'ws_reconnect', 'ws_command_error', 'ws_command_timeout', 'api_request', 'room_join_failed', 'room_create_failed', 'game_start_failed'}
@@ -130,7 +130,9 @@ def sanitize(payload, env):
 async def rum(request):
     env=request.match_info['env']
     if env not in ORIGINS: raise web.HTTPNotFound()
-    if request.headers.get('Origin') != ORIGINS[env]: raise web.HTTPForbidden()
+    allowed={ORIGINS[env]}
+    if env=='production': allowed.add('https://mindul-murder-mystery.duckdns.org')
+    if request.headers.get('Origin') not in allowed: raise web.HTTPForbidden()
     if request.content_length and request.content_length > 262144: raise web.HTTPRequestEntityTooLarge(max_size=262144, actual_size=request.content_length)
     bucket=limits[env]
     now=time.monotonic()

@@ -116,7 +116,8 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
+      - "443:443/tcp"
+      - "443:443/udp"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - ./deployments/caddy:/etc/caddy/apps:ro

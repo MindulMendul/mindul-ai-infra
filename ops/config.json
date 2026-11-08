@@ -7,7 +7,7 @@
   "helper_image": "mindul-monitoring-telemetry-gateway:latest",
   "required_containers": ["mindul-caddy", "mindul-kafka", "mindul-ollama", "mindul-portainer", "mindul-vscode", "mindul-kafka-ui", "deploy-festival-1", "murder-parker-qa-festival-qa-1", "mindul-monitoring-grafana-1", "mindul-monitoring-prometheus-1", "mindul-monitoring-loki-1", "mindul-monitoring-tempo-1", "mindul-monitoring-alloy-1", "mindul-monitoring-telemetry-gateway-1"],
   "probes": {
-    "production": "https://mindul-murder-mystery.duckdns.org/api/health",
+    "production": "https://eniveil.com/api/health",
     "qa": "https://qa-mindul-murder-mystery.duckdns.org/api/health",
     "grafana": "https://mindul-server.duckdns.org/grafana/api/health"
   },

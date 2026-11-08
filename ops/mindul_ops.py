@@ -337,7 +337,7 @@ def health():
         service,url=item;parsed=urllib.parse.urlsplit(url)
         success=0;expiry=0
         try:
-            with urllib.request.urlopen(url,timeout=5) as response:success=int(response.status==200)
+            with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'mindul-infrastructure-health/1.0'}),timeout=5) as response:success=int(response.status==200)
             with socket.create_connection((parsed.hostname,443),timeout=5) as connection:
                 with ssl.create_default_context().wrap_socket(connection,server_hostname=parsed.hostname) as secure:
                     expiry=ssl.cert_time_to_seconds(secure.getpeercert()['notAfter'])

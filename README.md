@@ -112,3 +112,15 @@ mindul restore-check
 mindul maintenance
 mindul-ops status
 ```
+
+## Production domain and HTTP/3
+
+Production: https://eniveil.com (www and the former production DuckDNS hostname
+redirect to the canonical host). QA and the infrastructure/Grafana hostname are
+unchanged. Caddy automatically issues and renews the origin certificates.
+Caddy enables h1/h2/h3 and publishes TCP 80, TCP 443 and UDP 443.
+The domain currently uses Cloudflare proxying; client HTTP/3 terminates there.
+Both public Cloudflare HTTP/3 and direct local Caddy HTTP/3 were verified with
+QUIC GET /api/health requests. If bypassing Cloudflare, allow UDP 443 in the OCI
+security list/NSG as well as the host/container network. Use Cloudflare Full
+(strict) TLS for certificate validation between Cloudflare and this origin.
