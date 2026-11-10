@@ -27,6 +27,7 @@ jobs:
         run: |
           docker compose config --quiet
           docker compose --env-file monitoring/.env.example -f monitoring/compose.yaml config --quiet
+          docker compose --env-file paseo/.env.example -f paseo/compose.yaml config --quiet
           python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Check shell scripts
         run: |

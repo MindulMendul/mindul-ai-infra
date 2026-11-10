@@ -217,7 +217,7 @@ def backup_volumes():
 def copy_configs(stage):
     destination=stage/'config';destination.mkdir()
     paths=run(['git','-C',ROOT,'ls-files','--cached','--others','--exclude-standard'],capture=True).splitlines()
-    for relative in [*paths,'.env','monitoring/.env','monitoring/secrets/web-metrics.token']:
+    for relative in [*paths,'.env','monitoring/.env','monitoring/secrets/web-metrics.token','paseo/.env','paseo/.operator-credentials']:
         source=ROOT/relative
         if source.is_file():
             target=destination/'infra'/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,target)
@@ -392,6 +392,7 @@ def deploy(commit=None):
     migrate_storage()
     base('up','-d')
     monitoring('up','-d','--build','--force-recreate')
+    run([sys.executable,ROOT/'scripts/install-paseo.py'])
     run([ROOT/'scripts/install-mindul.sh'])
     run([ROOT/'scripts/install-ops.sh'],env={**os.environ,'MINDUL_OPS_INITIALIZED':'1'})
     run(['docker','compose','--project-directory',ROOT,'exec','-T','caddy','caddy','validate','--config','/etc/caddy/Caddyfile','--adapter','caddyfile'],capture=True)

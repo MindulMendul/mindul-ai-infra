@@ -55,3 +55,7 @@ www.eniveil.com {
 mindul-murder-mystery.duckdns.org {
 	redir https://eniveil.com{uri} 308
 }
+
+paseo.eniveil.com {
+	reverse_proxy paseo-hub:3000
+}

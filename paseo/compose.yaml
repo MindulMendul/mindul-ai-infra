@@ -1,0 +1,59 @@
+name: mindul-paseo
+x-logging: &logging
+  driver: json-file
+  options: {max-size: "5m", max-file: "2"}
+services:
+  postgres:
+    image: postgres:17-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac
+    container_name: mindul-paseo-postgres
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+    command: [postgres, -c, shared_buffers=32MB, -c, max_connections=30]
+    environment:
+      POSTGRES_DB: paseo_hub
+      POSTGRES_USER: paseo
+      POSTGRES_PASSWORD: ${PASEO_POSTGRES_PASSWORD:?Run scripts/install-paseo.py first}
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U paseo -d paseo_hub"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging: *logging
+    networks: [database]
+  hub:
+    image: ghcr.io/getpaseo/hub@sha256:e2d9370644310bc8a6ad2f0859e4910492dd99eacf57208104c34e08a4ed2c45
+    container_name: mindul-paseo-hub
+    restart: unless-stopped
+    mem_limit: 768m
+    cpus: 1
+    depends_on:
+      postgres: {condition: service_healthy}
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://paseo:${PASEO_POSTGRES_PASSWORD}@postgres:5432/paseo_hub
+      PASEO_HUB_DATA_DIR: /var/lib/paseo-hub
+      PORT: "3000"
+      NODE_OPTIONS: --max-old-space-size=384
+    ports: ["127.0.0.1:3180:3000"]
+    volumes: ["hub-data:/var/lib/paseo-hub"]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 12
+    logging: *logging
+    networks:
+      database:
+      mindul-net:
+        aliases: [paseo-hub]
+networks:
+  database: {internal: true}
+  mindul-net: {external: true, name: mindul-net}
+volumes:
+  postgres-data:
+  hub-data:
