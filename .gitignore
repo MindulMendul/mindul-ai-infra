@@ -7,3 +7,6 @@ monitoring/grafana/service-dashboards/*
 monitoring/secrets/
 paseo/.operator-credentials
 paseo/.state/
+paseo/.router.json
+paseo/.router.env
+paseo/.router.json.tmp

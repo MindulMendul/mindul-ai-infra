@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Initialize and start the pinned Paseo Hub stack without exposing credentials."""
+import json
 import os
 from pathlib import Path
 import secrets
 import subprocess
+import sys
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,8 +42,16 @@ def install():
     if any(line.startswith('PASEO_BOOTSTRAP_') for line in lines):
         private_write(file,'\n'.join(line for line in lines if not line.startswith('PASEO_BOOTSTRAP_'))+'\n')
         compose('up','-d','--no-deps','--wait','--wait-timeout','120','hub')
+    router=PASEO/'.router.json'
+    if not router.exists():private_write(router,(PASEO/'router/config.example.json').read_text())
+    router.chmod(0o600)
+    environment=PASEO/'.router.env'
+    if not environment.exists():private_write(environment,(PASEO/'router/.env.example').read_text())
+    environment.chmod(0o600)
+    if not json.loads(router.read_text()).get('enabled'):
+        subprocess.run([sys.executable,str(PASEO/'router/runtime.py')],check=True)
     print('Paseo Hub installed. Operator credentials: paseo/.operator-credentials (0600).')
-    print('GitHub App, ready-status adapter and daemon enrollment remain separate setup steps.')
+    print('GitHub authority, the exact Projects board and PC daemon enrollment must be configured before enabling routing.')
 
 
 if __name__ == '__main__':

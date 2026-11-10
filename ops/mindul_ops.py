@@ -16,6 +16,7 @@ import shutil
 import signal
 import socket
 import ssl
+import sqlite3
 import subprocess
 import sys
 import tarfile
@@ -217,7 +218,7 @@ def backup_volumes():
 def copy_configs(stage):
     destination=stage/'config';destination.mkdir()
     paths=run(['git','-C',ROOT,'ls-files','--cached','--others','--exclude-standard'],capture=True).splitlines()
-    for relative in [*paths,'.env','monitoring/.env','monitoring/secrets/web-metrics.token','paseo/.env','paseo/.operator-credentials']:
+    for relative in [*paths,'.env','monitoring/.env','monitoring/secrets/web-metrics.token','paseo/.env','paseo/.operator-credentials','paseo/.router.json','paseo/.router.env']:
         source=ROOT/relative
         if source.is_file():
             target=destination/'infra'/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,target)
@@ -233,6 +234,11 @@ def copy_configs(stage):
             path=repo/relative
             if path.exists():
                 target=destination/name/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(path,target)
+    router=Path.home()/'.local/share/mindul-paseo-router/queue.sqlite'
+    if router.exists():
+        target=destination/'paseo-router/queue.sqlite';target.parent.mkdir(exist_ok=True)
+        with sqlite3.connect(router) as source_db, sqlite3.connect(target) as backup_db:
+            source_db.backup(backup_db)
     write(stage/'repositories.json',repos)
 
 

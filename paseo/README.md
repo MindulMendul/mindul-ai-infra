@@ -43,10 +43,11 @@ used approximately 208 MiB and 30 MiB respectively; workload may increase these.
    native `projects_v2_item` trigger. A Projects workflow needs a verified adapter,
    and personal Projects may require polling with separately authorized project access.
 
-GitHub App creation/installation, ready semantics and daemon enrollment remain
-unconfigured. The supported provider list does not imply a worker is online.
+Ready means the GitHub Projects **Status** field. Codex and Claude will run on
+a separate PC. GitHub App creation/installation, the exact board URL, project-read
+credentials and daemon enrollment remain unconfigured. The supported provider list does not imply a worker is online.
 
-## Dispatch contract to implement after those inputs are known
+## Projects Status router (implemented; disabled pending connections)
 
 - Accept only open issues in `MindulMendul/eniveil` that actually transitioned into
   the agreed Ready state. Re-fetch the issue/status before claiming work. Do not
@@ -79,5 +80,75 @@ PG, and starts PostgreSQL then Hub. Do not copy a running PostgreSQL data direct
 The Hub durable execution design must be respected by any dispatcher restart logic.
 Before upgrades keep an encrypted backup: upstream DB migrations are forward-only.
 
-The routing policy above is a contract, not an installed workflow. Activation and a
-real GitHub → ready → eligible daemon → PR test remain pending external setup.
+`paseo/router` implements a complete-snapshot GraphQL poller, a WAL SQLite queue,
+atomic claims and official Hub manual-run dispatch. The first successful scan records
+a baseline without bulk-starting existing Ready items; later entries into Ready enqueue
+work. The timer runs every minute with up to 30 seconds of jitter. Actual project
+fields/options are checked, all pages must succeed, and issue status is rechecked
+before dispatch. No issue labels substitute for Projects status.
+
+Configure the ignored `paseo/.router.json` after the PC enrolls. Set the board number,
+Hub GitHub connection slug and each worker's daemon slug, cwd, provider, native mode,
+optional model and unique trigger name. For example, two workers can refer to the same
+PC with providers `codex` and `claude`; only one development task runs on that PC at once.
+Provider/mode/path availability is validated by Hub during bundle installation.
+Only Hub-known agent executions are counted; interactive PC work not reported to Hub
+and provider subscription/quota availability cannot be inferred by this router.
+
+Runtime credentials belong in ignored `paseo/.router.env` (0600):
+`PROJECTS_GITHUB_TOKEN` with Projects read access and `PASEO_ROUTER_API_KEY` scoped to
+`runs:dispatch`. This is distinct from the development steps' GitHub App credentials.
+A GitHub App installation must have appropriate Projects permission; personal Projects
+can require user-authorized project access instead. Never paste secrets into chat.
+
+First render the bounded workflow bundle:
+
+```bash
+python3 paseo/router/runtime.py --render
+```
+
+For installation, provide a separate `PASEO_ROUTER_SETUP_KEY` scoped to
+`configuration:validate` and `configuration:install`, then run:
+
+```bash
+python3 paseo/router/runtime.py --install-bundle
+```
+
+Hub checks the actual connected daemon/provider and installs immutable configuration.
+The helper pins the returned version ID into the runtime config. Keep `enabled=false`
+until a controlled ready-status smoke test is agreed; installation does not flip it.
+The runtime key cannot replace configurations and a changed Hub revision is rejected.
+The emitted JSON is valid YAML, submitted through the documented configuration API.
+
+`mindul-paseo-router.timer` runs the router using the private environment file.
+`~/.local/share/mindul-paseo-router/queue.sqlite` holds observed transitions, capacity
+reservations, run IDs and outcomes; backups use SQLite's online backup API. Repeated
+polls, webhook re-deliveries and restarts do not requeue the same transition. A crashed
+or timed-out HTTP handoff becomes `uncertain` and holds its capacity until the Hub's
+matching durable delivery/run is found or an operator investigates it. It is never
+silently sent to the other provider. Project changes require a separate queue database.
+The queue does not change Projects status or automatically retry completed failures.
+
+Activation and a real Projects Ready → eligible PC provider → development PR test
+remain pending project credentials, GitHub App authority and PC enrollment. Current
+state is installed **but disabled**; synthetic tests are not a real-agent integration test.
+
+
+## Separate-PC enrollment
+
+Install Paseo and authenticate the Codex/Claude CLIs on the work PC. Run the following
+from that PC's repository directory, not this Ubuntu Hub server:
+
+```bash
+paseo hub login https://paseo.eniveil.com
+paseo hub permissions grant hub.execute
+paseo hub status
+```
+
+During interactive login, accept connecting this daemon. If that prompt was skipped,
+run `paseo hub connect` once. Do not repeat connect on an already-enrolled daemon.
+The PC needs outbound HTTPS/WebSocket connectivity to the Hub, without exposing a
+new inbound port. Use the actual local clone directory when configuring each worker.
+PC sleep/offline leaves pending jobs queued. After enrollment provide the Projects
+board URL and local clone path; provider model/mode choices must come from the connected
+daemon catalog, not invented model names.

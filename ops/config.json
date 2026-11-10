@@ -26,7 +26,8 @@
   "probes": {
     "production": "https://eniveil.com/api/health",
     "qa": "https://qa-mindul-murder-mystery.duckdns.org/api/health",
-    "grafana": "https://mindul-server.duckdns.org/grafana/api/health"
+    "grafana": "https://mindul-server.duckdns.org/grafana/api/health",
+    "paseo": "https://paseo.eniveil.com/health"
   },
   "volumes": [
     {

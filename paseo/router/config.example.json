@@ -1,0 +1,15 @@
+{
+  "enabled": false,
+  "project": {
+    "owner_kind": "user",
+    "owner": "MindulMendul",
+    "number": 0,
+    "status_field": "Status",
+    "ready_value": "Ready"
+  },
+  "organization_slug": "mindulmendul",
+  "hub_project_slug": "eniveil-ready",
+  "hub_url": "http://127.0.0.1:3180",
+  "workers": [],
+  "github_connection": ""
+}
