@@ -11,8 +11,9 @@ docker compose up -d
 docker compose logs -f ollama-init
 ```
 
-`ollama-init`은 Ollama가 준비되면 기본 모델 `qwen3.5:4b`를 다운로드하고 종료합니다.
-모델은 `ollama_data` 볼륨에 저장되며, 최초 다운로드가 완료되어야 채팅할 수 있습니다.
+`ollama-init`은 개발용 기본 모델 `qwen3.5:4b`, `ollama-lfm3-init`은 Paseo 이슈 분류용
+`lfm3`를 다운로드하고 종료합니다. 두 모델은 `ollama_data` 볼륨에 저장되며,
+최초 다운로드가 끝난 뒤 해당 모델을 사용할 수 있습니다.
 다른 모델은 `.env`의 `OLLAMA_MODEL`로 지정하고 요청의 `model`에도 같은 이름을 사용하세요.
 다운로드 후에는 요청 시 모델이 메모리에 로드됩니다.
 
@@ -23,9 +24,10 @@ docker compose logs -f ollama-init
 실행 이미지는 검증한 digest로 고정합니다. 이미지 변경은 `ops/README.md`의 절차로 적용하고 모델을 다운로드합니다.
 
 ```bash
-docker compose pull ollama ollama-init
+docker compose pull ollama ollama-init ollama-lfm3-init
 docker compose up -d ollama
 docker compose run --rm ollama-init
+docker compose run --rm ollama-lfm3-init
 docker compose exec ollama ollama list
 ```
 

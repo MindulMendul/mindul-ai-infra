@@ -15,6 +15,7 @@ import uuid
 from core import Queue
 from projects import Projects
 import cloud
+import triage
 
 ROOT=Path(__file__).resolve().parents[2]
 STATE=Path.home()/'.local/share/mindul-paseo-router'
@@ -44,6 +45,10 @@ def validate(config, execution=True):
         raise ValueError('Project owner is outside the allowed account')
     if type(project['number']) is not int or project['number']<1:raise ValueError('Set the exact Projects board number')
     if project.get('ready_value','Ready').casefold()!='ready':raise ValueError('Ready is the only authorized start state')
+    for key,default in (('initial_value','Initial'),('approve_value','Approve'),('reject_value','Reject')):
+        if not isinstance(project.get(key,default),str) or not project.get(key,default).strip():
+            raise ValueError('Invalid Project '+key)
+    if project.get('size_field','Size')!='Size':raise ValueError('Size field must be Size')
     backend=config.get('execution_backend','daemon')
     if backend not in ('daemon','cloud'):raise ValueError('Unknown execution backend')
     if backend=='cloud':
@@ -53,7 +58,12 @@ def validate(config, execution=True):
             if worker['name'] in names:raise ValueError('Duplicate cloud worker')
             names.add(worker['name'])
             if not isinstance(worker.get('priority',100),int):raise ValueError('Invalid cloud priority')
-            if worker.get('enabled',True):cloud.validate_worker(worker)
+            provider=worker['provider']
+            expected_sizes={'qwen-aider':{'XS','S'},'codex-cloud':{'M','L'}}
+            if worker.get('enabled',True):
+                if provider not in expected_sizes:raise ValueError('Only Qwen XS/S and Codex Cloud M/L workers are authorized')
+                if set(worker.get('sizes',[]))!=expected_sizes[provider]:raise ValueError('Worker sizes do not match the approved provider routing')
+                cloud.validate_worker(worker)
         if not any(w.get('enabled',True) for w in config['workers']):raise ValueError('Configure and enable a cloud provider')
         return
     names=set();triggers=set()
@@ -110,7 +120,9 @@ def cycle(config):
         return
     validate(config)
     is_cloud=config.get('execution_backend')=='cloud'
-    credentials=('PROJECTS_GITHUB_TOKEN',) if is_cloud else ('PROJECTS_GITHUB_TOKEN','PASEO_ROUTER_API_KEY')
+    credentials=['PROJECTS_GITHUB_TOKEN'] if is_cloud else ['PROJECTS_GITHUB_TOKEN','PASEO_ROUTER_API_KEY']
+    if is_cloud and any(w.get('enabled',True) and w['provider']=='qwen-aider' for w in config['workers']):
+        credentials.append('PASEO_QWEN_GITHUB_TOKEN')
     for name in credentials:
         if not os.environ.get(name):raise ValueError('Missing credential: '+name)
     STATE.mkdir(parents=True,exist_ok=True,mode=0o700);STATE.chmod(0o700)
@@ -145,6 +157,8 @@ def cycle(config):
                             token=queue.completion_token(job['delivery'])
                             ticket=cloud.submit(worker,job,token)
                             queue.cloud_ticket(job['delivery'],worker['provider'],ticket)
+                            if worker['provider']=='qwen-aider':
+                                queue.record(job['delivery'],'succeeded',ticket['id'])
                         else:
                             result=hub_request(config,os.environ['PASEO_ROUTER_API_KEY'],'/api/v1/manual-runs',{
                                 'projectSlug':config['hub_project_slug'],'expectedVersionId':config['expected_version_id'],

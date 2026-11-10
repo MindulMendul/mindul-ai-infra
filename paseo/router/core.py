@@ -19,7 +19,7 @@ class Queue:
           CREATE TABLE IF NOT EXISTS observations(item TEXT PRIMARY KEY,issue INTEGER NOT NULL,
             ready INTEGER NOT NULL,generation INTEGER NOT NULL);
           CREATE TABLE IF NOT EXISTS jobs(delivery TEXT PRIMARY KEY,item TEXT NOT NULL,
-            issue INTEGER NOT NULL,generation INTEGER NOT NULL,url TEXT NOT NULL,
+            issue INTEGER NOT NULL,generation INTEGER NOT NULL,url TEXT NOT NULL,size TEXT,
             state TEXT NOT NULL,worker TEXT,daemon TEXT,run_id TEXT,created REAL NOT NULL,
             UNIQUE(item,generation));
           CREATE TABLE IF NOT EXISTS cloud_runs(delivery TEXT PRIMARY KEY,provider TEXT NOT NULL,
@@ -27,6 +27,8 @@ class Queue:
           CREATE TABLE IF NOT EXISTS completions(delivery TEXT PRIMARY KEY,token_hash TEXT NOT NULL,
             expires REAL NOT NULL,pr_url TEXT);
         ''')
+        columns={row['name'] for row in self.db.execute('PRAGMA table_info(jobs)')}
+        if 'size' not in columns:self.db.execute('ALTER TABLE jobs ADD COLUMN size TEXT')
 
     def observe(self, project, items, ready_name='Ready'):
         """Commit a COMPLETE successful project snapshot; first scan only establishes baseline."""
@@ -48,8 +50,8 @@ class Queue:
                                 (ident,item['number'],int(ready),generation))
                 if entered and baseline:
                     key='eniveil-ready-'+hashlib.sha256(f'{project}:{ident}:{generation}'.encode()).hexdigest()
-                    self.db.execute('INSERT OR IGNORE INTO jobs VALUES(?,?,?,?,?,?,NULL,NULL,NULL,?)',
-                                    (key,ident,item['number'],generation,item['url'],'queued',time.time()))
+                    self.db.execute('INSERT OR IGNORE INTO jobs(delivery,item,issue,generation,url,size,state,created) VALUES(?,?,?,?,?,?,?,?)',
+                                    (key,ident,item['number'],generation,item['url'],item.get('size') or None,'queued',time.time()))
                 if not ready:
                     self.db.execute("UPDATE jobs SET state='cancelled' WHERE item=? AND state='queued'",(ident,))
             for row in self.db.execute('SELECT item FROM observations').fetchall():
@@ -72,7 +74,7 @@ class Queue:
         return self.reserve_available(eligible)
 
     def reserve_available(self, workers):
-        """Claim one issue and configured execution slot, independent of launch backend."""
+        """Claim one issue and a compatible configured execution slot."""
         self.db.execute('BEGIN IMMEDIATE')
         try:
             active=self.db.execute("SELECT * FROM jobs WHERE state IN ('dispatching','running','uncertain')").fetchall()
@@ -83,10 +85,13 @@ class Queue:
                 if not resource or not worker.get('enabled',True) or resource in occupied:continue
                 last=self.db.execute('SELECT max(created) FROM jobs WHERE worker=?',(worker['name'],)).fetchone()[0] or 0
                 eligible.append((worker.get('priority',100),last,worker['name'],worker,resource))
-            chosen=min(eligible,key=lambda x:x[:3]) if eligible else None
-            job=next((r for r in self.db.execute("SELECT * FROM jobs WHERE state='queued' ORDER BY created,delivery")
-                      if r['issue'] not in issues),None)
-            if not chosen or not job:self.db.execute('COMMIT');return None
+            queued=self.db.execute("SELECT * FROM jobs WHERE state='queued' ORDER BY created,delivery").fetchall()
+            job=next((row for row in queued if row['issue'] not in issues and any(
+                not candidate[3].get('sizes') or row['size'] in candidate[3]['sizes'] for candidate in eligible)),None)
+            if not job:self.db.execute('COMMIT');return None
+            compatible=[candidate for candidate in eligible if not candidate[3].get('sizes') or job['size'] in candidate[3]['sizes']]
+            chosen=min(compatible,key=lambda x:x[:3]) if compatible else None
+            if not chosen:self.db.execute('COMMIT');return None
             self.db.execute("UPDATE jobs SET state='dispatching',worker=?,daemon=? WHERE delivery=?",
                             (chosen[3]['name'],chosen[4],job['delivery']))
             self.db.execute('COMMIT');return dict(job),chosen[3]
