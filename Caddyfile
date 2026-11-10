@@ -57,5 +57,10 @@ mindul-murder-mystery.duckdns.org {
 }
 
 paseo.eniveil.com {
-	reverse_proxy paseo-hub:3000
+    handle /automation/completion {
+        reverse_proxy paseo-router-callbacks:3190
+    }
+    handle {
+        reverse_proxy paseo-hub:3000
+    }
 }

@@ -51,6 +51,30 @@ services:
       database:
       mindul-net:
         aliases: [paseo-hub]
+  callbacks:
+    image: mindul-monitoring-telemetry-gateway:latest
+    container_name: mindul-paseo-callbacks
+    user: "1001:1001"
+    command: [python, /router/callback_server.py]
+    restart: unless-stopped
+    read_only: true
+    mem_limit: 64m
+    cpus: 0.1
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PASEO_ROUTER_STATE_DIR: /data
+    volumes:
+      - ./router:/router:ro
+      - /home/ubuntu/.local/share/mindul-paseo-router:/data
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3190/health',timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    logging: *logging
+    networks:
+      mindul-net:
+        aliases: [paseo-router-callbacks]
 networks:
   database: {internal: true}
   mindul-net: {external: true, name: mindul-net}

@@ -3,13 +3,33 @@
   "project": {
     "owner_kind": "user",
     "owner": "MindulMendul",
-    "number": 0,
+    "number": 3,
     "status_field": "Status",
     "ready_value": "Ready"
   },
   "organization_slug": "mindulmendul",
   "hub_project_slug": "eniveil-ready",
   "hub_url": "http://127.0.0.1:3180",
-  "workers": [],
-  "github_connection": ""
+  "workers": [
+    {
+      "name": "codex-cloud",
+      "resource": "codex-cloud",
+      "provider": "codex-cloud",
+      "enabled": false,
+      "environment_id": "",
+      "binary": "/home/ubuntu/.local/bin/codex",
+      "priority": 100
+    },
+    {
+      "name": "claude-cloud",
+      "resource": "claude-cloud",
+      "provider": "claude-cloud",
+      "enabled": false,
+      "routine_url": "",
+      "token_env": "PASEO_CLAUDE_ROUTINE_TOKEN",
+      "priority": 100
+    }
+  ],
+  "github_connection": "",
+  "execution_backend": "cloud"
 }

@@ -14,6 +14,7 @@ import uuid
 
 from core import Queue
 from projects import Projects
+import cloud
 
 ROOT=Path(__file__).resolve().parents[2]
 STATE=Path.home()/'.local/share/mindul-paseo-router'
@@ -43,6 +44,18 @@ def validate(config, execution=True):
         raise ValueError('Project owner is outside the allowed account')
     if type(project['number']) is not int or project['number']<1:raise ValueError('Set the exact Projects board number')
     if project.get('ready_value','Ready').casefold()!='ready':raise ValueError('Ready is the only authorized start state')
+    backend=config.get('execution_backend','daemon')
+    if backend not in ('daemon','cloud'):raise ValueError('Unknown execution backend')
+    if backend=='cloud':
+        names=set()
+        for worker in config['workers']:
+            if not SLUG.fullmatch(worker['name']) or not SLUG.fullmatch(worker['resource']):raise ValueError('Invalid cloud worker slot')
+            if worker['name'] in names:raise ValueError('Duplicate cloud worker')
+            names.add(worker['name'])
+            if not isinstance(worker.get('priority',100),int):raise ValueError('Invalid cloud priority')
+            if worker.get('enabled',True):cloud.validate_worker(worker)
+        if not any(w.get('enabled',True) for w in config['workers']):raise ValueError('Configure and enable a cloud provider')
+        return
     names=set();triggers=set()
     if not config['workers']:raise ValueError('No connected workers configured')
     for worker in config['workers']:
@@ -96,7 +109,9 @@ def cycle(config):
         print('Projects router disabled; no GitHub queries or agent launches performed.')
         return
     validate(config)
-    for name in ('PROJECTS_GITHUB_TOKEN','PASEO_ROUTER_API_KEY'):
+    is_cloud=config.get('execution_backend')=='cloud'
+    credentials=('PROJECTS_GITHUB_TOKEN',) if is_cloud else ('PROJECTS_GITHUB_TOKEN','PASEO_ROUTER_API_KEY')
+    for name in credentials:
         if not os.environ.get(name):raise ValueError('Missing credential: '+name)
     STATE.mkdir(parents=True,exist_ok=True,mode=0o700);STATE.chmod(0o700)
     with (STATE/'cycle.lock').open('a') as lock:
@@ -108,9 +123,13 @@ def cycle(config):
         try:
             project,items=Projects(os.environ['PROJECTS_GITHUB_TOKEN'],config['project']).scan()
             queue.observe(project,items,config['project'].get('ready_value','Ready'))
-            snapshot=hub_snapshot(config);queue.reconcile(snapshot['runs'])
-            daemons={d['slug']:d for d in snapshot['daemons']}
-            reserved=queue.reserve(config['workers'],daemons,snapshot['busy'])
+            if is_cloud:
+                eligible=[w for w in config['workers'] if w.get('enabled',True) and cloud.available(w)]
+                reserved=queue.reserve_available(eligible)
+            else:
+                snapshot=hub_snapshot(config);queue.reconcile(snapshot['runs'])
+                daemons={d['slug']:d for d in snapshot['daemons']}
+                reserved=queue.reserve(config['workers'],daemons,snapshot['busy'])
             if reserved:
                 job,worker=reserved
                 # Re-read the complete board before the irreversible handoff.
@@ -122,11 +141,16 @@ def cycle(config):
                     queue.db.execute("UPDATE jobs SET state='cancelled' WHERE delivery=?",(job['delivery'],))
                 else:
                     try:
-                        result=hub_request(config,os.environ['PASEO_ROUTER_API_KEY'],'/api/v1/manual-runs',{
-                            'projectSlug':config['hub_project_slug'],'expectedVersionId':config['expected_version_id'],
-                            'trigger':worker['trigger'],'actor':'eniveil-ready-router','deliveryKey':job['delivery'],
-                            'input':'Implement only this Ready issue: '+job['url']})
-                        queue.record(job['delivery'],result['workflowStatus'],result['triggerRunId'])
+                        if is_cloud:
+                            token=queue.completion_token(job['delivery'])
+                            ticket=cloud.submit(worker,job,token)
+                            queue.cloud_ticket(job['delivery'],worker['provider'],ticket)
+                        else:
+                            result=hub_request(config,os.environ['PASEO_ROUTER_API_KEY'],'/api/v1/manual-runs',{
+                                'projectSlug':config['hub_project_slug'],'expectedVersionId':config['expected_version_id'],
+                                'trigger':worker['trigger'],'actor':'eniveil-ready-router','deliveryKey':job['delivery'],
+                                'input':'Implement only this Ready issue: '+job['url']})
+                            queue.record(job['delivery'],result['workflowStatus'],result['triggerRunId'])
                     except Exception:
                         queue.record(job['delivery'],'uncertain');raise
             metrics(True,queue.counts(),True)
@@ -138,6 +162,7 @@ def cycle(config):
 
 
 def render(config):
+    if config.get('execution_backend')=='cloud':raise ValueError('Cloud execution uses native launchers, not a daemon bundle')
     validate(config,execution=False)
     if not SLUG.fullmatch(config.get('github_connection','')):raise ValueError('Set the Hub GitHub connection slug')
     hub={'name':config['hub_project_slug'],'environments':{},'agents':{}}

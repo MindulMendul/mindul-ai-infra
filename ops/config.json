@@ -21,7 +21,8 @@
     "mindul-monitoring-alloy-1",
     "mindul-monitoring-telemetry-gateway-1",
     "mindul-paseo-hub",
-    "mindul-paseo-postgres"
+    "mindul-paseo-postgres",
+    "mindul-paseo-callbacks"
   ],
   "probes": {
     "production": "https://eniveil.com/api/health",

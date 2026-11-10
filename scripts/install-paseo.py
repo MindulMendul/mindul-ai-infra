@@ -32,6 +32,8 @@ def install():
                       f'PASEO_BOOTSTRAP_ORGANIZATION=MindulMendul\nPASEO_BOOTSTRAP_OWNER_EMAIL={email}\nPASEO_BOOTSTRAP_OWNER_PASSWORD={password}\n')
         private_write(PASEO/'.operator-credentials',f'email={email}\npassword={password}\n')
     file.chmod(0o600)
+    state=Path.home()/'.local/share/mindul-paseo-router'
+    state.mkdir(parents=True,exist_ok=True);state.chmod(0o700)
     compose('config','--quiet')
     compose('up','-d','--wait','--wait-timeout','240')
     with urllib.request.urlopen('http://127.0.0.1:3180/health',timeout=10) as response:
@@ -51,7 +53,7 @@ def install():
     if not json.loads(router.read_text()).get('enabled'):
         subprocess.run([sys.executable,str(PASEO/'router/runtime.py')],check=True)
     print('Paseo Hub installed. Operator credentials: paseo/.operator-credentials (0600).')
-    print('GitHub authority, the exact Projects board and PC daemon enrollment must be configured before enabling routing.')
+    print('Configure Projects read access and native cloud environments before enabling routing.')
 
 
 if __name__ == '__main__':
