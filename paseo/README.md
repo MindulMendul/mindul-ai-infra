@@ -1,9 +1,9 @@
 # Eniveil issue-development Hub
 
-This host runs Paseo Hub and PostgreSQL only. Development runs on separately enrolled
-Paseo daemons; no agent CLI, subscription or development daemon is installed by this stack.
-The only intended automation is work on eligible ready issues in `MindulMendul/eniveil`.
-No trigger is currently enabled and no existing issues are backfilled.
+Paseo Hub runs here, with the existing Ollama host providing LFM3 triage and Qwen XS/S
+development. M/L development runs in a Codex Cloud environment connected to
+`MindulMendul/eniveil`. Paseo polls the GitHub Project; its first scan is a baseline,
+and the automation remains disabled until its credentials and workers are configured.
 
 ## Start and access
 
@@ -29,43 +29,43 @@ used approximately 208 MiB and 30 MiB respectively; workload may increase these.
 
 ## Required connections
 
-1. Create a dedicated GitHub App through Hub's Apps → GitHub guide and install it
-   on **only `MindulMendul/eniveil`**. This assistant's GitHub connection does not grant
-   a running third-party Hub its own persistent credentials. Use the generated Hub
-   callback, setup and webhook URLs. Save private key/client secret in Hub, not Git.
-2. On each work machine, install Paseo and its provider CLI, authenticate that CLI,
-   clone the repository, and enroll using `paseo hub login https://paseo.eniveil.com`
-   and `paseo hub connect`. Grant `paseo hub permissions grant hub.execute` there.
-3. Record daemon slug, repository directory, provider/model/mode and supported task
-   types. An offline or unconfigured provider must not receive development work.
-4. Confirm whether Ready means a GitHub Projects Status field or a repository label.
-   Hub natively supports `github.issue_label_added`; it does not currently expose a
-   native `projects_v2_item` trigger. A Projects workflow needs a verified adapter,
-   and personal Projects may require polling with separately authorized project access.
+1. Authenticate the Codex CLI on this host and create/publish a Codex Cloud environment
+   that checks out **only `MindulMendul/eniveil`**. Put its exact environment ID in the
+   enabled `codex-cloud` worker. Paseo invokes `codex cloud exec --env <id> --branch dev`;
+   it does not need this chat's Codex workspace attached to eniveil.
+2. Install Aider in a dedicated venv and configure its executable and an existing
+   eniveil clone as `repo_path`:
+   `python3 -m venv /home/ubuntu/.local/share/paseo-aider`, then
+   `/home/ubuntu/.local/share/paseo-aider/bin/pip install aider-chat`. Pull `lfm3`
+   and `qwen3.5:4b` into Ollama. The Qwen token needs eniveil issues read, contents
+   write, and pull-request write access.
+3. Configure a GitHub token with Projects read/write and eniveil issue read/write
+   access. It reads Project fields and issue content, updates triaged issues, and
+   posts rejection comments. Keep it in ignored `paseo/.router.env`.
+4. Set the Project number and verify its Status options `Initial`, `Approve`,
+   `Reject`, `Ready` and Size options `XS`, `S`, `M`, `L`. Priority is human
+   managed and is never changed by the router.
 
-Ready means the GitHub Projects **Status** field. Codex and Claude will run on
-a separate PC. GitHub App creation/installation, the exact board URL, project-read
-credentials and daemon enrollment remain unconfigured. The supported provider list does not imply a worker is online.
+## Initial triage and Ready execution (implemented; disabled pending setup)
 
-## Projects Status router (implemented; disabled pending connections)
-
-- Accept only open issues in `MindulMendul/eniveil` that actually transitioned into
-  the agreed Ready state. Re-fetch the issue/status before claiming work. Do not
-  infer approval from an unchecked checklist, issue title or stale webhook.
-- Persist pending work and delivery deduplication; reconnects/re-deliveries must not
-  start a second development session for the same issue readiness generation.
-- Select an enrolled `hub.execute` daemon with the configured provider, a recent
-  connection and available capacity; choose the least-loaded eligible candidate,
-  then configured priority for ties. Reserve capacity atomically. Keep work queued
-  if no candidate is eligible, rather than routing to an unknown model or machine.
-- Claim one issue per worker initially. Enforce deadlines and retain explicit failure
-  states; do not silently retry work whose remote launch outcome is unknown.
-- Agent prompt: work in an isolated worktree from latest dev; read AGENTS.md; follow
-  the repository issue/Goal process; implement only the issue; verify using the repo's
-  current commands; open a feature/fix → dev PR. Do not promote qa/main or deploy.
-  Required reviews/checks/human approval must follow the repository's current policy.
-- Record the selected daemon/agent, issue, run ID, failure and resulting PR. Do not
-  log GitHub tokens, session credentials or issue body content in operational logs.
+- On each poll, process one newly observed open issue that entered Project Status
+  `Initial`; the first complete snapshot is a baseline and does not bulk-triage old items.
+- LFM3 alone classifies the issue as approve/reject, estimates Size, chooses matching
+  existing labels and rewrites approved title/body into a clear implementation prompt.
+  Priority remains untouched. Qwen is not used for triage.
+- Approve assigns `MindulMendul`, applies the LFM3 title/body, labels and Size, then
+  moves Status to `Approve`. Reject preserves the issue text, posts the LFM3 rationale
+  as a deduplicated comment, and moves Status to `Reject`. Legacy `ignore` output is
+  normalized to Reject.
+- A human sets Priority and moves an approved issue to `Ready` to start development.
+  The durable queue routes XS/S to the local Qwen Aider worker and M/L to the Codex
+  Cloud worker. Codex Cloud must use its environment ID for the eniveil checkout.
+- Both development workers use latest `dev`, read `AGENTS.md`, work in isolation,
+  verify with `bash scripts/codex/verify.sh`, and open a typed PR to `dev`. Neither
+  worker merges, promotes `qa/main`, or deploys.
+- Initial and Ready transitions are deduplicated in SQLite. A failed LFM3 call or
+  GitHub update remains pending; a timed-out remote development handoff is uncertain
+  and is not silently retried. Do not log tokens, issue bodies, or model outputs.
 
 ## Operations
 
@@ -87,19 +87,17 @@ work. The timer runs every minute with up to 30 seconds of jitter. Actual projec
 fields/options are checked, all pages must succeed, and issue status is rechecked
 before dispatch. No issue labels substitute for Projects status.
 
-Configure the ignored `paseo/.router.json` after the PC enrolls. Set the board number,
-Hub GitHub connection slug and each worker's daemon slug, cwd, provider, native mode,
-optional model and unique trigger name. For example, two workers can refer to the same
-PC with providers `codex` and `claude`; only one development task runs on that PC at once.
-Provider/mode/path availability is validated by Hub during bundle installation.
-Only Hub-known agent executions are counted; interactive PC work not reported to Hub
-and provider subscription/quota availability cannot be inferred by this router.
+Configure ignored `paseo/.router.json` from `paseo/router/config.example.json`.
+Set the exact Project number, enable the Qwen XS/S worker with its eniveil clone path,
+and enable the M/L Codex worker with the published eniveil Cloud environment ID.
+The Project Size field must use the XS/S/M/L options; Ready issues without a recognized
+Size stay queued.
 
 Runtime credentials belong in ignored `paseo/.router.env` (0600):
-`PROJECTS_GITHUB_TOKEN` with Projects read access and `PASEO_ROUTER_API_KEY` scoped to
-`runs:dispatch`. This is distinct from the development steps' GitHub App credentials.
-A GitHub App installation must have appropriate Projects permission; personal Projects
-can require user-authorized project access instead. Never paste secrets into chat.
+`PROJECTS_GITHUB_TOKEN` needs Projects read/write and eniveil issue read/write;
+`PASEO_QWEN_GITHUB_TOKEN` needs eniveil issue read, contents write, and pull-request
+write; `OLLAMA_URL` points to the local Ollama API. Keep the existing
+`PASEO_ROUTER_API_KEY` only for daemon-backed Hub dispatch. Never paste secrets into chat.
 
 First render the bounded workflow bundle:
 
@@ -121,17 +119,18 @@ The runtime key cannot replace configurations and a changed Hub revision is reje
 The emitted JSON is valid YAML, submitted through the documented configuration API.
 
 `mindul-paseo-router.timer` runs the router using the private environment file.
-`~/.local/share/mindul-paseo-router/queue.sqlite` holds observed transitions, capacity
-reservations, run IDs and outcomes; backups use SQLite's online backup API. Repeated
+`~/.local/share/mindul-paseo-router/queue.sqlite` holds Ready jobs and
+`triage.sqlite` holds Initial transitions and saved LFM3 decisions; both are backed up
+using SQLite's online backup API. Repeated
 polls, webhook re-deliveries and restarts do not requeue the same transition. A crashed
 or timed-out HTTP handoff becomes `uncertain` and holds its capacity until the Hub's
 matching durable delivery/run is found or an operator investigates it. It is never
 silently sent to the other provider. Project changes require a separate queue database.
 The queue does not change Projects status or automatically retry completed failures.
 
-Activation and a real Projects Ready → eligible PC provider → development PR test
-remain pending project credentials, GitHub App authority and PC enrollment. Current
-state is installed **but disabled**; synthetic tests are not a real-agent integration test.
+Activation and a real Initial → LFM3 triage → human Ready → size-routed PR run remain
+pending credentials, an eniveil Codex Cloud environment, an Aider installation and a
+configured Qwen repository clone. The example config remains disabled until these are ready.
 
 
 ## Separate-PC enrollment

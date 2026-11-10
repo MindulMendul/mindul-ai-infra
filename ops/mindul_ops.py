@@ -234,11 +234,12 @@ def copy_configs(stage):
             path=repo/relative
             if path.exists():
                 target=destination/name/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(path,target)
-    router=Path.home()/'.local/share/mindul-paseo-router/queue.sqlite'
-    if router.exists():
-        target=destination/'paseo-router/queue.sqlite';target.parent.mkdir(exist_ok=True)
-        with sqlite3.connect(router) as source_db, sqlite3.connect(target) as backup_db:
-            source_db.backup(backup_db)
+    for name in ('queue.sqlite','triage.sqlite'):
+        router=Path.home()/'.local/share/mindul-paseo-router'/name
+        if router.exists():
+            target=destination/'paseo-router'/name;target.parent.mkdir(exist_ok=True)
+            with sqlite3.connect(router) as source_db, sqlite3.connect(target) as backup_db:
+                source_db.backup(backup_db)
     write(stage/'repositories.json',repos)
 
 

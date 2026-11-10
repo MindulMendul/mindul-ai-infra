@@ -44,16 +44,20 @@ class CloudTests(unittest.TestCase):
 
     @patch('triage._chat')
     def test_triage_rejects_untrusted_or_invalid_model_output(self, chat):
-        chat.return_value='{"decision":"backlog"}'
-        self.assertEqual(triage.classify('http://ollama','x','y'),'backlog')
-        chat.return_value='{"decision":"run_shell"}'
-        with self.assertRaises(RuntimeError):triage.classify('http://ollama','x','y')
+        chat.return_value=json.dumps({'decision':'ignore','reason':'실행 가능한 개발 작업이 아닙니다.',
+            'title':'','body':'','size':'','labels':[]})
+        self.assertEqual(triage.classify('http://ollama','x','y',[])['decision'],'reject')
+        chat.return_value=json.dumps({'decision':'run_shell','reason':'bad',
+            'title':'','body':'','size':'','labels':[]})
+        with self.assertRaises(RuntimeError):triage.classify('http://ollama','x','y',[])
 
-    @patch('triage._chat', return_value='{"title":"정리된 제목","body":"완료 조건"}')
+    @patch('triage._chat', return_value=json.dumps({'decision':'approve','reason':'구현 가능한 기능 제안입니다.',
+        'title':'정리된 제목','body':'완료 조건','size':'S','labels':['feature']}))
     def test_triage_writer_has_fixed_models_and_schema(self, chat):
-        self.assertEqual(triage.rewrite('http://ollama','x','y')['title'],'정리된 제목')
-        self.assertEqual(chat.call_args.args[1], 'qwen3.5:9b')
-
+        result=triage.classify('http://ollama','x','y',['feature'])
+        self.assertEqual(result['title'],'정리된 제목')
+        self.assertEqual(triage.OLLAMA_MODEL_CLASSIFIER,'lfm3')
+        self.assertIn('acceptance criteria',chat.call_args.args[1])
     @patch.dict('os.environ',{'PASEO_CLAUDE_ROUTINE_TOKEN':'routine-secret'})
     @patch('cloud.urllib.request.build_opener')
     def test_claude_scoped_trigger(self,opener):

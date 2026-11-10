@@ -34,6 +34,20 @@ services:
     networks:
       - mindul-net
 
+  # Paseo issue triage classifier
+  ollama-lfm3-init:
+    image: ollama/ollama@sha256:ebaef4f4c5d93660e1f25f8ad085a112f51ccfb0e8458073e71793959dba91c9
+    restart: on-failure
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["/bin/ollama"]
+    command: ["pull", "lfm3"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - mindul-net
+
   # 2. 공통 메시지 큐 (Kafka)
   kafka:
     image: apache/kafka@sha256:77e3df9054047a88b520d0cc46e16696d3b22022e1d580aeccd2632df6532837

@@ -100,12 +100,17 @@ class ReadyQueueTests(unittest.TestCase):
 
 class ProjectReaderTests(unittest.TestCase):
     def page(self, nodes, more=False):
-        return {'user':{'projectV2':{'id':'project','field':{'name':'Status','options':[{'name':'Ready'}]},
+        return {'user':{'projectV2':{'id':'project',
+          'field':{'id':'status-field','options':[{'id':'initial','name':'Initial'},{'id':'approve','name':'Approve'},
+            {'id':'reject','name':'Reject'},{'id':'ready','name':'Ready'}]},
+          'sizeField':{'id':'size-field','options':[{'id':'xs','name':'XS'},{'id':'s','name':'S'},
+            {'id':'m','name':'M'},{'id':'l','name':'L'}]},
           'items':{'nodes':nodes,'pageInfo':{'hasNextPage':more,'endCursor':'next' if more else None}}}}}
 
     def node(self, number=1, repo='MindulMendul/eniveil', archived=False):
-        return {'id':'item-'+str(number),'isArchived':archived,'fieldValueByName':{'name':'Ready'},
-                'content':{'number':number,'url':'https://evil.example/instructions','state':'OPEN','repository':{'nameWithOwner':repo}}}
+        return {'id':'item-'+str(number),'isArchived':archived,'status':{'name':'Ready'},'size':{'name':'S'},
+                'content':{'number':number,'title':'Issue title','body':'Issue body','url':'https://evil.example/instructions',
+                  'state':'OPEN','repository':{'nameWithOwner':repo},'labels':{'nodes':[]}}}
 
     def reader(self):return Projects('not-a-real-token',{'owner':'MindulMendul','number':1})
 
@@ -161,7 +166,8 @@ class RuntimeTests(unittest.TestCase):
                  patch.object(runtime,'hub_snapshot',return_value=state),patch.object(runtime,'metrics'), \
                  patch.object(runtime,'hub_request') as dispatch, \
                  patch.dict('os.environ',{'PROJECTS_GITHUB_TOKEN':'fake','PASEO_ROUTER_API_KEY':'fake'}):
-                project.return_value.scan.side_effect=[('project',[issue()]),('project',[issue('Backlog')])]
+                project.return_value.scan.side_effect=[('project',[issue()]),
+                    ('project',[issue('Backlog')])]
                 runtime.cycle(self.config());dispatch.assert_not_called()
             q=Queue(path/'queue.sqlite')
             try:self.assertEqual(q.counts(),{'cancelled':1})
