@@ -166,8 +166,8 @@ class RuntimeTests(unittest.TestCase):
                  patch.object(runtime,'hub_snapshot',return_value=state),patch.object(runtime,'metrics'), \
                  patch.object(runtime,'hub_request') as dispatch, \
                  patch.dict('os.environ',{'PROJECTS_GITHUB_TOKEN':'fake','PASEO_ROUTER_API_KEY':'fake'}):
-                project.return_value.scan.side_effect=[('project',[issue('Backlog')]),
-                    ('project',[issue()]),('project',[issue('Backlog')])]
+                project.return_value.scan.side_effect=[('project',[issue()]),
+                    ('project',[issue('Backlog')])]
                 runtime.cycle(self.config());dispatch.assert_not_called()
             q=Queue(path/'queue.sqlite')
             try:self.assertEqual(q.counts(),{'cancelled':1})
